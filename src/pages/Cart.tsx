@@ -1,4 +1,3 @@
-
 import { Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, X, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
@@ -7,6 +6,7 @@ import { useCoupon } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
+import { Coupon } from '@/types/database';
 
 const Cart = () => {
   const { 
@@ -38,16 +38,22 @@ const Cart = () => {
     try {
       await refetchCoupon();
       if (couponData) {
+        // Type assertion to ensure coupon data matches our type
+        const validatedCoupon: Coupon = {
+          ...couponData,
+          discount_type: couponData.discount_type as 'percentage' | 'fixed'
+        };
+        
         const subtotal = getSubtotal();
-        if (couponData.min_order_amount && subtotal < couponData.min_order_amount) {
+        if (validatedCoupon.min_order_amount && subtotal < validatedCoupon.min_order_amount) {
           toast({
             title: "Cupón no válido",
-            description: `Monto mínimo requerido: S/ ${couponData.min_order_amount}`,
+            description: `Monto mínimo requerido: S/ ${validatedCoupon.min_order_amount}`,
             variant: "destructive",
           });
           return;
         }
-        applyCoupon(couponData);
+        applyCoupon(validatedCoupon);
         setCouponCode('');
       } else {
         toast({
@@ -108,7 +114,6 @@ const Cart = () => {
         <h1 className="text-3xl font-bold text-gray-800 mb-8">Carrito de Compras</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Lista de productos */}
           <div className="lg:col-span-2 space-y-4">
             {items.map((item) => {
               const isWholesale = item.quantity >= item.product.min_wholesale_quantity;
@@ -183,9 +188,7 @@ const Cart = () => {
             })}
           </div>
 
-          {/* Resumen del pedido */}
           <div className="space-y-6">
-            {/* Cupón */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="font-semibold text-gray-800 mb-4">Cupón de descuento</h3>
               
@@ -225,7 +228,6 @@ const Cart = () => {
               )}
             </div>
 
-            {/* Resumen */}
             <div className="bg-white rounded-lg shadow-md p-6">
               <h3 className="font-semibold text-gray-800 mb-4">Resumen del pedido</h3>
               

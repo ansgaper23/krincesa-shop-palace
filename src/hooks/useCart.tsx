@@ -1,5 +1,5 @@
 
-import { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Product, CartItem, Coupon } from '@/types/database';
 import { useToast } from '@/hooks/use-toast';
 
