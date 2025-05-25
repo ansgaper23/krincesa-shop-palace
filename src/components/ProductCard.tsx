@@ -1,123 +1,82 @@
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ShoppingCart } from "lucide-react";
-
-interface Product {
-  id: number;
-  name: string;
-  category: string;
-  brand: string;
-  price: number;
-  wholesalePrice: number;
-  minWholesale: number;
-  image: string;
-  description: string;
-}
+import { Link } from 'react-router-dom';
+import { ShoppingCart } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { useCart } from '@/hooks/useCart';
+import { Product, Category } from '@/types/database';
 
 interface ProductCardProps {
-  product: Product;
+  product: Product & { categories: Category | null };
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
-  const [quantity, setQuantity] = useState(1);
+  const { addToCart } = useCart();
 
-  const isWholesale = quantity >= product.minWholesale;
-  const currentPrice = isWholesale ? product.wholesalePrice : product.price;
-  const total = currentPrice * quantity;
-
-  const discountPercentage = Math.round(((product.price - product.wholesalePrice) / product.price) * 100);
+  const handleAddToCart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    addToCart(product, 1);
+  };
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-      {/* Product Image */}
-      <div className="relative aspect-square overflow-hidden">
-        <img
-          src={product.image}
-          alt={product.name}
-          className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-        />
-        {isWholesale && (
-          <Badge className="absolute top-2 left-2 bg-green-500 hover:bg-green-600">
-            -{discountPercentage}% Por Mayor
-          </Badge>
-        )}
-      </div>
-
-      {/* Product Info */}
-      <div className="p-4">
-        <div className="mb-2">
-          <Badge variant="outline" className="text-xs">
-            {product.category}
-          </Badge>
+    <Link to={`/product/${product.id}`} className="block group">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 group-hover:scale-105">
+        <div className="aspect-square bg-gray-100 overflow-hidden">
+          <img
+            src={product.image_url || '/placeholder.svg'}
+            alt={product.name}
+            className="w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-90"
+          />
         </div>
         
-        <h3 className="font-semibold text-gray-800 mb-1 line-clamp-2 h-12">
-          {product.name}
-        </h3>
-        
-        <p className="text-sm text-gray-600 mb-3">
-          {product.brand}
-        </p>
-
-        {/* Pricing */}
-        <div className="mb-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-lg font-bold text-pink-600">
-              S/ {currentPrice.toFixed(2)}
-            </span>
-            {!isWholesale && (
-              <span className="text-xs text-gray-500">
-                Por mayor: S/ {product.wholesalePrice.toFixed(2)}
-              </span>
+        <div className="p-4">
+          <div className="mb-2">
+            {product.categories && (
+              <Badge variant="secondary" className="text-xs mb-2">
+                {product.categories.name}
+              </Badge>
+            )}
+            {product.brand && (
+              <Badge variant="outline" className="text-xs ml-1">
+                {product.brand}
+              </Badge>
             )}
           </div>
           
-          {quantity >= product.minWholesale && (
-            <p className="text-xs text-green-600 font-medium">
-              Precio por mayor aplicado (3+ unidades)
-            </p>
+          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+            {product.name}
+          </h3>
+          
+          <div className="space-y-1 mb-3">
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Por unidad:</span>
+              <span className="font-bold text-gray-800">S/ {product.price.toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-sm text-gray-600">Por mayor ({product.min_wholesale_quantity}+):</span>
+              <span className="font-bold text-green-600">S/ {product.wholesale_price.toFixed(2)}</span>
+            </div>
+          </div>
+
+          {product.show_dozen_message && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
+              <p className="text-yellow-800 text-xs font-medium">
+                💬 Precio por docena: consultar al interno
+              </p>
+            </div>
           )}
-        </div>
-
-        {/* Quantity Selector */}
-        <div className="flex items-center gap-2 mb-4">
+          
           <Button
-            variant="outline"
+            onClick={handleAddToCart}
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white"
             size="sm"
-            onClick={() => setQuantity(Math.max(1, quantity - 1))}
-            className="h-8 w-8 p-0"
           >
-            -
-          </Button>
-          <span className="px-3 py-1 border rounded text-sm min-w-[3rem] text-center">
-            {quantity}
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setQuantity(quantity + 1)}
-            className="h-8 w-8 p-0"
-          >
-            +
-          </Button>
-        </div>
-
-        {/* Total and Add to Cart */}
-        <div className="flex items-center justify-between">
-          <span className="font-bold text-gray-800">
-            Total: S/ {total.toFixed(2)}
-          </span>
-          <Button 
-            size="sm" 
-            className="bg-pink-500 hover:bg-pink-600 text-white"
-          >
-            <ShoppingCart className="h-4 w-4 mr-1" />
-            Añadir
+            <ShoppingCart className="h-4 w-4 mr-2" />
+            Añadir al carrito
           </Button>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };

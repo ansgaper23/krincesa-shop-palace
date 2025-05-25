@@ -1,78 +1,31 @@
 
 import { useState } from "react";
-import { Search, ShoppingCart, Menu, X } from "lucide-react";
+import { Search, ShoppingCart, Menu } from "lucide-react";
+import { Link } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-
-// Mock data for products
-const products = [
-  {
-    id: 1,
-    name: "BRILLO FRUTITAS FLOWER SECRET",
-    category: "Maquillaje",
-    brand: "Flower Secret",
-    price: 3.50,
-    wholesalePrice: 2.90,
-    minWholesale: 3,
-    image: "/lovable-uploads/5826904f-f4ea-46e4-bc00-9c83fb63adab.png",
-    description: "Brillo labial con aroma frutal, disponible en varios colores vibrantes."
-  },
-  {
-    id: 2,
-    name: "ACCESORIO MULTIUSO PARA CABELLO",
-    category: "Accesorios",
-    brand: "Kawai",
-    price: 1.90,
-    wholesalePrice: 1.50,
-    minWholesale: 3,
-    image: "/lovable-uploads/a946dc8f-268c-4225-9e11-f7a2fb665a28.png",
-    description: "Accesorio versátil para el cabello con diseño kawaii."
-  },
-  {
-    id: 3,
-    name: "BEAUTY BLENDER ESTUCHE",
-    category: "Maquillaje",
-    brand: "Beauty Tools",
-    price: 4.50,
-    wholesalePrice: 3.80,
-    minWholesale: 3,
-    image: "/lovable-uploads/a946dc8f-268c-4225-9e11-f7a2fb665a28.png",
-    description: "Esponja para maquillaje con estuche de almacenamiento."
-  },
-  {
-    id: 4,
-    name: "BASE LÍQUIDA CON APLICADOR",
-    category: "Maquillaje",
-    brand: "Kawai",
-    price: 6.00,
-    wholesalePrice: 5.20,
-    minWholesale: 3,
-    image: "/lovable-uploads/a946dc8f-268c-4225-9e11-f7a2fb665a28.png",
-    description: "Base líquida de alta cobertura con aplicador incluido."
-  }
-];
-
-const categories = [
-  "Todas",
-  "Maquillaje",
-  "Accesorios",
-  "Cuidado Corporal",
-  "Cuidado facial",
-  "Sin categoría"
-];
+import { useProducts, useCategories } from "@/hooks/useProducts";
+import { useCart } from "@/hooks/useCart";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [cartItems, setCartItems] = useState(0);
+  
+  const { data: products = [], isLoading: productsLoading } = useProducts();
+  const { data: categories = [] } = useCategories();
+  const { getItemCount, getTotal } = useCart();
+
+  // Agregar "Todas" al inicio de las categorías
+  const allCategories = ["Todas", ...categories.map(cat => cat.name)];
 
   const filteredProducts = products.filter(product => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         product.category.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "Todas" || product.category === selectedCategory;
+                         (product.categories?.name || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = selectedCategory === "Todas" || 
+                           (product.categories?.name === selectedCategory);
     return matchesSearch && matchesCategory;
   });
 
@@ -94,9 +47,9 @@ const Index = () => {
 
             {/* Logo */}
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
+              <Link to="/" className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
                 👑 Krincesa
-              </div>
+              </Link>
             </div>
 
             {/* Desktop Navigation */}
@@ -108,15 +61,17 @@ const Index = () => {
 
             {/* Search and Cart */}
             <div className="flex items-center space-x-4">
-              <Button variant="ghost" size="sm" className="relative">
-                <ShoppingCart className="h-6 w-6" />
-                {cartItems > 0 && (
-                  <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                    {cartItems}
-                  </span>
-                )}
-              </Button>
-              <span className="text-sm">S/ 0.00</span>
+              <Link to="/cart">
+                <Button variant="ghost" size="sm" className="relative">
+                  <ShoppingCart className="h-6 w-6" />
+                  {getItemCount() > 0 && (
+                    <span className="absolute -top-2 -right-2 bg-pink-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {getItemCount()}
+                    </span>
+                  )}
+                </Button>
+              </Link>
+              <span className="text-sm">S/ {getTotal().toFixed(2)}</span>
             </div>
           </div>
 
@@ -124,7 +79,7 @@ const Index = () => {
           <div className="mt-4 relative max-w-xl mx-auto">
             <Input
               type="text"
-              placeholder="Search for products"
+              placeholder="Buscar productos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="pl-10 pr-4 py-2 w-full border-2 border-gray-200 focus:border-pink-500"
@@ -138,7 +93,7 @@ const Index = () => {
         <div className="flex gap-6">
           {/* Sidebar */}
           <Sidebar
-            categories={categories}
+            categories={allCategories}
             selectedCategory={selectedCategory}
             onCategoryChange={setSelectedCategory}
             isOpen={sidebarOpen}
@@ -153,13 +108,28 @@ const Index = () => {
             </div>
 
             {/* Products Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-              {filteredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
+            {productsLoading ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+                    <div className="h-48 bg-gray-200"></div>
+                    <div className="p-4 space-y-2">
+                      <div className="h-4 bg-gray-200 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {filteredProducts.map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+              </div>
+            )}
 
-            {filteredProducts.length === 0 && (
+            {!productsLoading && filteredProducts.length === 0 && (
               <div className="text-center py-12">
                 <p className="text-gray-500 text-lg">No se encontraron productos</p>
               </div>
