@@ -6,19 +6,25 @@ import { useProduct } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import Header from '@/components/Header';
+import RelatedProducts from '@/components/RelatedProducts';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { data: product, isLoading } = useProduct(id!);
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
+  const [selectedImage, setSelectedImage] = useState<string>('');
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando producto...</p>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
+            <p className="mt-4 text-gray-600">Cargando producto...</p>
+          </div>
         </div>
       </div>
     );
@@ -26,12 +32,15 @@ const ProductDetail = () => {
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">Producto no encontrado</h2>
-          <Link to="/" className="text-pink-500 hover:text-pink-600">
-            Volver a la tienda
-          </Link>
+      <div className="min-h-screen bg-gray-50">
+        <Header />
+        <div className="flex items-center justify-center py-20">
+          <div className="text-center">
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">Producto no encontrado</h2>
+            <Link to="/" className="text-pink-500 hover:text-pink-600">
+              Volver a la tienda
+            </Link>
+          </div>
         </div>
       </div>
     );
@@ -46,39 +55,60 @@ const ProductDetail = () => {
     setQuantity(1);
   };
 
+  const currentImageUrl = selectedImage || product.image_url || '/placeholder.svg';
+  const additionalImages = product.additional_images || [];
+
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b-2 border-pink-500">
-        <div className="container mx-auto px-4 py-4">
-          <Link to="/" className="inline-flex items-center text-gray-700 hover:text-pink-500">
-            <ArrowLeft className="h-5 w-5 mr-2" />
+      <Header />
+
+      <div className="container mx-auto px-4 py-8">
+        {/* Breadcrumb */}
+        <div className="mb-6">
+          <Link to="/" className="inline-flex items-center text-gray-600 hover:text-pink-500">
+            <ArrowLeft className="h-4 w-4 mr-2" />
             Volver a la tienda
           </Link>
         </div>
-      </header>
 
-      <div className="container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Galería de imágenes */}
           <div className="space-y-4">
             <div className="aspect-square bg-white rounded-lg shadow-md overflow-hidden">
               <img
-                src={product.image_url || '/placeholder.svg'}
+                src={currentImageUrl}
                 alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
             
             {/* Imágenes adicionales */}
-            {product.additional_images && product.additional_images.length > 0 && (
+            {additionalImages.length > 0 && (
               <div className="grid grid-cols-4 gap-2">
-                {product.additional_images.map((image, index) => (
-                  <div key={index} className="aspect-square bg-white rounded-lg shadow-md overflow-hidden">
+                <div
+                  className={`aspect-square bg-white rounded-lg shadow-md overflow-hidden cursor-pointer border-2 ${
+                    !selectedImage ? 'border-pink-500' : 'border-transparent'
+                  }`}
+                  onClick={() => setSelectedImage('')}
+                >
+                  <img
+                    src={product.image_url || '/placeholder.svg'}
+                    alt={product.name}
+                    className="w-full h-full object-cover hover:opacity-80"
+                  />
+                </div>
+                {additionalImages.map((image, index) => (
+                  <div
+                    key={index}
+                    className={`aspect-square bg-white rounded-lg shadow-md overflow-hidden cursor-pointer border-2 ${
+                      selectedImage === image ? 'border-pink-500' : 'border-transparent'
+                    }`}
+                    onClick={() => setSelectedImage(image)}
+                  >
                     <img
                       src={image}
                       alt={`${product.name} ${index + 1}`}
-                      className="w-full h-full object-cover cursor-pointer hover:opacity-80"
+                      className="w-full h-full object-cover hover:opacity-80"
                     />
                   </div>
                 ))}
@@ -189,6 +219,12 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Productos relacionados */}
+        <RelatedProducts 
+          currentProductId={product.id} 
+          categoryId={product.category_id} 
+        />
       </div>
     </div>
   );
