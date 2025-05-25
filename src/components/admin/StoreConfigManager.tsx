@@ -7,10 +7,12 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 const StoreConfigManager = () => {
   const { data: storeConfig, refetch } = useStoreConfig();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [formData, setFormData] = useState({
     store_name: '',
@@ -57,8 +59,12 @@ const StoreConfigManager = () => {
         description: "La configuración de la tienda se ha actualizado correctamente.",
       });
       
+      // Invalidate store config queries to refresh all components using it
+      queryClient.invalidateQueries({ queryKey: ['store-config'] });
+      queryClient.refetchQueries({ queryKey: ['store-config'] });
       refetch();
     } catch (error) {
+      console.error('Error updating store config:', error);
       toast({
         title: "Error",
         description: "Hubo un error al actualizar la configuración.",

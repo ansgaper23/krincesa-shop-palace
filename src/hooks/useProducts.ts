@@ -22,6 +22,31 @@ export const useProducts = () => {
       if (error) throw error;
       return data as (Product & { categories: Category | null })[];
     },
+    staleTime: 0, // Always refetch to ensure fresh data
+    cacheTime: 0, // Don't cache to ensure real-time updates
+  });
+};
+
+export const useAllProducts = () => {
+  return useQuery({
+    queryKey: ['all-products'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            id,
+            name
+          )
+        `)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data as (Product & { categories: Category | null })[];
+    },
+    staleTime: 0,
+    cacheTime: 0,
   });
 };
 
@@ -45,6 +70,8 @@ export const useProduct = (id: string) => {
       if (error) throw error;
       return data as Product & { categories: Category | null };
     },
+    staleTime: 0,
+    cacheTime: 0,
   });
 };
 
@@ -95,5 +122,7 @@ export const useStoreConfig = () => {
       if (error) throw error;
       return data;
     },
+    staleTime: 0,
+    cacheTime: 0,
   });
 };

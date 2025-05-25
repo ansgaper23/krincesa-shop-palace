@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useProducts, useCategories } from '@/hooks/useProducts';
+import { useAllProducts, useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -12,11 +12,13 @@ import { supabase } from '@/integrations/supabase/client';
 import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { useQueryClient } from '@tanstack/react-query';
 
 const ProductsManager = () => {
-  const { data: products, refetch: refetchProducts } = useProducts();
+  const { data: products, refetch: refetchProducts } = useAllProducts();
   const { data: categories } = useCategories();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<any>(null);
@@ -47,6 +49,14 @@ const ProductsManager = () => {
       is_active: true
     });
     setEditingProduct(null);
+  };
+
+  const invalidateQueries = () => {
+    // Invalidate all product-related queries to ensure fresh data
+    queryClient.invalidateQueries({ queryKey: ['products'] });
+    queryClient.invalidateQueries({ queryKey: ['all-products'] });
+    queryClient.refetchQueries({ queryKey: ['products'] });
+    queryClient.refetchQueries({ queryKey: ['all-products'] });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -86,10 +96,13 @@ const ProductsManager = () => {
         });
       }
       
+      // Force refresh all product queries
+      invalidateQueries();
       refetchProducts();
       setIsDialogOpen(false);
       resetForm();
     } catch (error) {
+      console.error('Error saving product:', error);
       toast({
         title: "Error",
         description: "Hubo un error al guardar el producto.",
@@ -131,8 +144,11 @@ const ProductsManager = () => {
         description: "El producto se ha eliminado correctamente.",
       });
       
+      // Force refresh all product queries
+      invalidateQueries();
       refetchProducts();
     } catch (error) {
+      console.error('Error deleting product:', error);
       toast({
         title: "Error",
         description: "Hubo un error al eliminar el producto.",
