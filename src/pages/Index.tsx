@@ -71,7 +71,7 @@ const Index = () => {
                   )}
                 </Button>
               </Link>
-              <span className="text-sm">S/ {getTotal().toFixed(2)}</span>
+              <span className="text-sm font-medium">S/ {getTotal().toFixed(2)}</span>
             </div>
           </div>
 
@@ -107,22 +107,22 @@ const Index = () => {
               <p className="text-gray-600">Descubre nuestros productos de belleza y accesorios</p>
             </div>
 
-            {/* Products Grid - Cambiado a 2 columnas en móvil, más columnas en pantallas grandes */}
+            {/* Products Grid - Optimizado para móvil */}
             {productsLoading ? (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
-                    <div className="h-48 bg-gray-200"></div>
-                    <div className="p-4 space-y-2">
-                      <div className="h-4 bg-gray-200 rounded"></div>
-                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-                      <div className="h-6 bg-gray-200 rounded w-1/2"></div>
+                    <div className="aspect-square bg-gray-200"></div>
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 bg-gray-200 rounded"></div>
+                      <div className="h-3 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
                     </div>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
@@ -144,18 +144,18 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
               <h3 className="font-bold text-lg mb-4 text-pink-600">Krincesa Distribuidora</h3>
-              <p className="text-gray-600">Tu tienda de confianza para productos de belleza y accesorios.</p>
+              <p className="text-gray-600 text-sm">Tu tienda de confianza para productos de belleza y accesorios.</p>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4">Contacto</h3>
-              <div className="space-y-2 text-gray-600">
+              <div className="space-y-2 text-gray-600 text-sm">
                 <p>📱 WhatsApp: +51 999 999 999</p>
                 <p>📧 Email: info@krincesa.com</p>
               </div>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4">Síguenos</h3>
-              <div className="flex space-x-4">
+              <div className="flex space-x-4 text-sm">
                 <a href="#" className="text-pink-500 hover:text-pink-600">Facebook</a>
                 <a href="#" className="text-pink-500 hover:text-pink-600">Instagram</a>
                 <a href="#" className="text-pink-500 hover:text-pink-600">TikTok</a>

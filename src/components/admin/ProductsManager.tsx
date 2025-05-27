@@ -33,7 +33,8 @@ const ProductsManager = () => {
     min_wholesale_quantity: '3',
     image_url: '',
     show_dozen_message: false,
-    is_active: true
+    is_active: true,
+    wholesale_only: false
   });
 
   const resetForm = () => {
@@ -47,26 +48,37 @@ const ProductsManager = () => {
       min_wholesale_quantity: '3',
       image_url: '',
       show_dozen_message: false,
-      is_active: true
+      is_active: true,
+      wholesale_only: false
     });
     setEditingProduct(null);
   };
 
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['products'] });
-    queryClient.invalidateQueries({ queryKey: ['all-products'] });
-    queryClient.refetchQueries({ queryKey: ['products'] });
-    queryClient.refetchQueries({ queryKey: ['all-products'] });
+  const invalidateQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['products'] });
+    await queryClient.invalidateQueries({ queryKey: ['all-products'] });
+    await queryClient.refetchQueries({ queryKey: ['products'] });
+    await queryClient.refetchQueries({ queryKey: ['all-products'] });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     console.log('Submitting form data:', formData);
     
-    if (!formData.name.trim() || !formData.price || !formData.wholesale_price) {
+    if (!formData.name.trim() || !formData.price) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Si no es solo por mayor, debe tener precio por mayor
+    if (!formData.wholesale_only && !formData.wholesale_price) {
+      toast({
+        title: "Error",
+        description: "Si no es solo precio por unidad, debe tener precio por mayor.",
         variant: "destructive",
       });
       return;
@@ -78,8 +90,8 @@ const ProductsManager = () => {
       brand: formData.brand?.trim() || null,
       category_id: formData.category_id || null,
       price: parseFloat(formData.price),
-      wholesale_price: parseFloat(formData.wholesale_price),
-      min_wholesale_quantity: parseInt(formData.min_wholesale_quantity) || 3,
+      wholesale_price: formData.wholesale_only ? parseFloat(formData.price) : parseFloat(formData.wholesale_price || formData.price),
+      min_wholesale_quantity: formData.wholesale_only ? 1 : parseInt(formData.min_wholesale_quantity) || 3,
       image_url: formData.image_url || null,
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
@@ -122,15 +134,15 @@ const ProductsManager = () => {
         });
       }
       
-      invalidateQueries();
+      await invalidateQueries();
       await refetchProducts();
       setIsDialogOpen(false);
       resetForm();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving product:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al guardar el producto.",
+        description: error.message || "Hubo un error al guardar el producto.",
         variant: "destructive",
       });
     }
@@ -139,6 +151,9 @@ const ProductsManager = () => {
   const handleEdit = (product: any) => {
     console.log('Editing product:', product);
     setEditingProduct(product);
+    
+    const isWholesaleOnly = product.price === product.wholesale_price && product.min_wholesale_quantity === 1;
+    
     setFormData({
       name: product.name || '',
       description: product.description || '',
@@ -149,7 +164,8 @@ const ProductsManager = () => {
       min_wholesale_quantity: product.min_wholesale_quantity?.toString() || '3',
       image_url: product.image_url || '',
       show_dozen_message: product.show_dozen_message || false,
-      is_active: product.is_active ?? true
+      is_active: product.is_active ?? true,
+      wholesale_only: isWholesaleOnly
     });
     setIsDialogOpen(true);
   };
@@ -170,13 +186,13 @@ const ProductsManager = () => {
         description: "El producto se ha eliminado correctamente.",
       });
       
-      invalidateQueries();
+      await invalidateQueries();
       await refetchProducts();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error deleting product:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al eliminar el producto.",
+        description: error.message || "Hubo un error al eliminar el producto.",
         variant: "destructive",
       });
     }
@@ -201,7 +217,7 @@ const ProductsManager = () => {
             </DialogHeader>
             
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="name">Nombre del Producto *</Label>
                   <Input
@@ -251,7 +267,23 @@ const ProductsManager = () => {
                 </Select>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="flex items-center space-x-2 mb-4">
+                <Switch
+                  id="wholesale_only"
+                  checked={formData.wholesale_only}
+                  onCheckedChange={(checked) => {
+                    setFormData({ 
+                      ...formData, 
+                      wholesale_only: checked,
+                      wholesale_price: checked ? formData.price : formData.wholesale_price,
+                      min_wholesale_quantity: checked ? '1' : '3'
+                    });
+                  }}
+                />
+                <Label htmlFor="wholesale_only">Solo precio por unidad (sin precio por mayor)</Label>
+              </div>
+
+              {formData.wholesale_only ? (
                 <div>
                   <Label htmlFor="price">Precio por Unidad *</Label>
                   <Input
@@ -263,30 +295,44 @@ const ProductsManager = () => {
                     required
                   />
                 </div>
-                
-                <div>
-                  <Label htmlFor="wholesale_price">Precio por Mayor *</Label>
-                  <Input
-                    id="wholesale_price"
-                    type="number"
-                    step="0.01"
-                    value={formData.wholesale_price}
-                    onChange={(e) => setFormData({ ...formData, wholesale_price: e.target.value })}
-                    required
-                  />
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <Label htmlFor="price">Precio por Unidad *</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      step="0.01"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="wholesale_price">Precio por Mayor *</Label>
+                    <Input
+                      id="wholesale_price"
+                      type="number"
+                      step="0.01"
+                      value={formData.wholesale_price}
+                      onChange={(e) => setFormData({ ...formData, wholesale_price: e.target.value })}
+                      required
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor="min_wholesale_quantity">Cantidad Mínima Mayor *</Label>
+                    <Input
+                      id="min_wholesale_quantity"
+                      type="number"
+                      value={formData.min_wholesale_quantity}
+                      onChange={(e) => setFormData({ ...formData, min_wholesale_quantity: e.target.value })}
+                      required
+                    />
+                  </div>
                 </div>
-                
-                <div>
-                  <Label htmlFor="min_wholesale_quantity">Cantidad Mínima Mayor *</Label>
-                  <Input
-                    id="min_wholesale_quantity"
-                    type="number"
-                    value={formData.min_wholesale_quantity}
-                    onChange={(e) => setFormData({ ...formData, min_wholesale_quantity: e.target.value })}
-                    required
-                  />
-                </div>
-              </div>
+              )}
 
               <ImageUpload
                 value={formData.image_url}
@@ -327,7 +373,7 @@ const ProductsManager = () => {
         </Dialog>
       </div>
 
-      <div className="border rounded-lg">
+      <div className="border rounded-lg overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow>
@@ -348,10 +394,13 @@ const ProductsManager = () => {
                     src={product.image_url || '/placeholder.svg'}
                     alt={product.name}
                     className="w-12 h-12 object-cover rounded"
+                    onError={(e) => {
+                      e.currentTarget.src = '/placeholder.svg';
+                    }}
                   />
                 </TableCell>
-                <TableCell className="font-medium">{product.name}</TableCell>
-                <TableCell>{product.brand || '-'}</TableCell>
+                <TableCell className="font-medium max-w-[150px] truncate">{product.name}</TableCell>
+                <TableCell className="max-w-[100px] truncate">{product.brand || '-'}</TableCell>
                 <TableCell>S/ {product.price.toFixed(2)}</TableCell>
                 <TableCell>S/ {product.wholesale_price.toFixed(2)}</TableCell>
                 <TableCell>
@@ -362,7 +411,7 @@ const ProductsManager = () => {
                   </span>
                 </TableCell>
                 <TableCell>
-                  <div className="flex space-x-2">
+                  <div className="flex space-x-1">
                     <Button
                       size="sm"
                       variant="outline"

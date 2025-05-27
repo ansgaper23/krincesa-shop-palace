@@ -25,6 +25,8 @@ const StoreConfigManager = () => {
     privacy_policy: ''
   });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   useEffect(() => {
     if (storeConfig) {
       console.log('Store config loaded:', storeConfig);
@@ -41,27 +43,46 @@ const StoreConfigManager = () => {
     }
   }, [storeConfig]);
 
+  const invalidateQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['store-config'] });
+    await queryClient.refetchQueries({ queryKey: ['store-config'] });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!formData.store_name.trim()) {
+      toast({
+        title: "Error",
+        description: "El nombre de la tienda es obligatorio.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
     console.log('Submitting store config:', formData);
     
     try {
+      // Preparar datos a actualizar
+      const updateData = {
+        store_name: formData.store_name.trim(),
+        logo_url: formData.logo_url.trim() || null,
+        whatsapp_number: formData.whatsapp_number.trim() || null,
+        instagram_url: formData.instagram_url.trim() || null,
+        facebook_url: formData.facebook_url.trim() || null,
+        tiktok_url: formData.tiktok_url.trim() || null,
+        terms_and_conditions: formData.terms_and_conditions.trim() || null,
+        privacy_policy: formData.privacy_policy.trim() || null,
+        updated_at: new Date().toISOString()
+      };
+
       if (storeConfig?.id) {
         // Actualizar configuración existente
         console.log('Updating existing config with ID:', storeConfig.id);
         const { data, error } = await supabase
           .from('store_config')
-          .update({
-            store_name: formData.store_name,
-            logo_url: formData.logo_url || null,
-            whatsapp_number: formData.whatsapp_number || null,
-            instagram_url: formData.instagram_url || null,
-            facebook_url: formData.facebook_url || null,
-            tiktok_url: formData.tiktok_url || null,
-            terms_and_conditions: formData.terms_and_conditions || null,
-            privacy_policy: formData.privacy_policy || null,
-            updated_at: new Date().toISOString()
-          })
+          .update(updateData)
           .eq('id', storeConfig.id)
           .select();
         
@@ -73,16 +94,7 @@ const StoreConfigManager = () => {
         console.log('Creating new config');
         const { data, error } = await supabase
           .from('store_config')
-          .insert([{
-            store_name: formData.store_name,
-            logo_url: formData.logo_url || null,
-            whatsapp_number: formData.whatsapp_number || null,
-            instagram_url: formData.instagram_url || null,
-            facebook_url: formData.facebook_url || null,
-            tiktok_url: formData.tiktok_url || null,
-            terms_and_conditions: formData.terms_and_conditions || null,
-            privacy_policy: formData.privacy_policy || null
-          }])
+          .insert([updateData])
           .select();
         
         console.log('Insert result:', { data, error });
@@ -92,20 +104,22 @@ const StoreConfigManager = () => {
       
       toast({
         title: "Configuración actualizada",
-        description: "La configuración de la tienda se ha actualizado correctamente.",
+        description: "La configuración de la tienda se ha guardado correctamente.",
       });
       
-      // Invalidate and refetch queries
-      queryClient.invalidateQueries({ queryKey: ['store-config'] });
-      queryClient.refetchQueries({ queryKey: ['store-config'] });
+      // Invalidar queries y recargar datos
+      await invalidateQueries();
       await refetch();
-    } catch (error) {
+      
+    } catch (error: any) {
       console.error('Error updating store config:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al actualizar la configuración.",
+        description: error.message || "Hubo un error al actualizar la configuración.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -113,12 +127,13 @@ const StoreConfigManager = () => {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <Label htmlFor="store_name">Nombre de la Tienda</Label>
+          <Label htmlFor="store_name">Nombre de la Tienda *</Label>
           <Input
             id="store_name"
             value={formData.store_name}
             onChange={(e) => setFormData({ ...formData, store_name: e.target.value })}
             placeholder="Krincesa Distribuidora"
+            required
           />
         </div>
         
@@ -191,7 +206,7 @@ const StoreConfigManager = () => {
             id="terms_and_conditions"
             value={formData.terms_and_conditions}
             onChange={(e) => setFormData({ ...formData, terms_and_conditions: e.target.value })}
-            rows={8}
+            rows={6}
             placeholder="Ingresa los términos y condiciones de tu tienda..."
           />
         </div>
@@ -202,15 +217,19 @@ const StoreConfigManager = () => {
             id="privacy_policy"
             value={formData.privacy_policy}
             onChange={(e) => setFormData({ ...formData, privacy_policy: e.target.value })}
-            rows={8}
+            rows={6}
             placeholder="Ingresa la política de privacidad de tu tienda..."
           />
         </div>
       </div>
 
       <div className="flex justify-end">
-        <Button type="submit" className="bg-pink-500 hover:bg-pink-600">
-          Guardar Configuración
+        <Button 
+          type="submit" 
+          className="bg-pink-500 hover:bg-pink-600"
+          disabled={isSubmitting}
+        >
+          {isSubmitting ? 'Guardando...' : 'Guardar Configuración'}
         </Button>
       </div>
     </form>

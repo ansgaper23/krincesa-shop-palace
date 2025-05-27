@@ -19,21 +19,26 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     addToCart(product, 1);
   };
 
+  const isWholesaleOnly = product.price === product.wholesale_price && product.min_wholesale_quantity === 1;
+
   return (
     <Link to={`/product/${product.id}`} className="block group">
-      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 group-hover:scale-105">
+      <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 group-hover:scale-105 h-full">
         <div className="aspect-square bg-gray-100 overflow-hidden">
           <img
             src={product.image_url || '/placeholder.svg'}
             alt={product.name}
             className="w-full h-full object-cover transition-opacity duration-200 group-hover:opacity-90"
+            onError={(e) => {
+              e.currentTarget.src = '/placeholder.svg';
+            }}
           />
         </div>
         
-        <div className="p-4">
+        <div className="p-3">
           <div className="mb-2">
             {product.categories && (
-              <Badge variant="secondary" className="text-xs mb-2">
+              <Badge variant="secondary" className="text-xs mb-1">
                 {product.categories.name}
               </Badge>
             )}
@@ -44,36 +49,38 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           
-          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-2">
+          <h3 className="font-semibold text-gray-800 mb-2 text-sm line-clamp-2 min-h-[2.5rem]">
             {product.name}
           </h3>
           
           <div className="space-y-1 mb-3">
             <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Por unidad:</span>
-              <span className="font-bold text-gray-800">S/ {product.price.toFixed(2)}</span>
+              <span className="text-xs text-gray-600">Por unidad:</span>
+              <span className="font-bold text-gray-800 text-sm">S/ {product.price.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-sm text-gray-600">Por mayor ({product.min_wholesale_quantity}+):</span>
-              <span className="font-bold text-green-600">S/ {product.wholesale_price.toFixed(2)}</span>
-            </div>
+            {!isWholesaleOnly && (
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-gray-600">Por mayor ({product.min_wholesale_quantity}+):</span>
+                <span className="font-bold text-green-600 text-sm">S/ {product.wholesale_price.toFixed(2)}</span>
+              </div>
+            )}
           </div>
 
           {product.show_dozen_message && (
             <div className="bg-yellow-50 border border-yellow-200 rounded p-2 mb-3">
               <p className="text-yellow-800 text-xs font-medium">
-                💬 Precio por docena: consultar al interno
+                💬 Precio por docena: consultar
               </p>
             </div>
           )}
           
           <Button
             onClick={handleAddToCart}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+            className="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs py-2"
             size="sm"
           >
-            <ShoppingCart className="h-4 w-4 mr-2" />
-            Añadir al carrito
+            <ShoppingCart className="h-3 w-3 mr-1" />
+            Añadir
           </Button>
         </div>
       </div>
