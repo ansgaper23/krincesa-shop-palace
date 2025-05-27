@@ -23,7 +23,7 @@ export const useProducts = () => {
       return data as (Product & { categories: Category | null })[];
     },
     staleTime: 0, // Always refetch to ensure fresh data
-    cacheTime: 0, // Don't cache to ensure real-time updates
+    gcTime: 0, // Don't cache to ensure real-time updates
   });
 };
 
@@ -46,7 +46,7 @@ export const useAllProducts = () => {
       return data as (Product & { categories: Category | null })[];
     },
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 };
 
@@ -71,7 +71,7 @@ export const useProduct = (id: string) => {
       return data as Product & { categories: Category | null };
     },
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 };
 
@@ -123,6 +123,6 @@ export const useStoreConfig = () => {
       return data;
     },
     staleTime: 0,
-    cacheTime: 0,
+    gcTime: 0,
   });
 };
