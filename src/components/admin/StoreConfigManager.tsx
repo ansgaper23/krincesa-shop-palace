@@ -27,6 +27,7 @@ const StoreConfigManager = () => {
 
   useEffect(() => {
     if (storeConfig) {
+      console.log('Store config loaded:', storeConfig);
       setFormData({
         store_name: storeConfig.store_name || '',
         logo_url: storeConfig.logo_url || '',
@@ -42,27 +43,62 @@ const StoreConfigManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting store config:', formData);
     
     try {
-      const { error } = await supabase
-        .from('store_config')
-        .update({
-          ...formData,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', storeConfig?.id);
-      
-      if (error) throw error;
+      if (storeConfig?.id) {
+        // Actualizar configuración existente
+        console.log('Updating existing config with ID:', storeConfig.id);
+        const { data, error } = await supabase
+          .from('store_config')
+          .update({
+            store_name: formData.store_name,
+            logo_url: formData.logo_url || null,
+            whatsapp_number: formData.whatsapp_number || null,
+            instagram_url: formData.instagram_url || null,
+            facebook_url: formData.facebook_url || null,
+            tiktok_url: formData.tiktok_url || null,
+            terms_and_conditions: formData.terms_and_conditions || null,
+            privacy_policy: formData.privacy_policy || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', storeConfig.id)
+          .select();
+        
+        console.log('Update result:', { data, error });
+        
+        if (error) throw error;
+      } else {
+        // Crear nueva configuración
+        console.log('Creating new config');
+        const { data, error } = await supabase
+          .from('store_config')
+          .insert([{
+            store_name: formData.store_name,
+            logo_url: formData.logo_url || null,
+            whatsapp_number: formData.whatsapp_number || null,
+            instagram_url: formData.instagram_url || null,
+            facebook_url: formData.facebook_url || null,
+            tiktok_url: formData.tiktok_url || null,
+            terms_and_conditions: formData.terms_and_conditions || null,
+            privacy_policy: formData.privacy_policy || null
+          }])
+          .select();
+        
+        console.log('Insert result:', { data, error });
+        
+        if (error) throw error;
+      }
       
       toast({
         title: "Configuración actualizada",
         description: "La configuración de la tienda se ha actualizado correctamente.",
       });
       
-      // Invalidate store config queries to refresh all components using it
+      // Invalidate and refetch queries
       queryClient.invalidateQueries({ queryKey: ['store-config'] });
       queryClient.refetchQueries({ queryKey: ['store-config'] });
-      refetch();
+      await refetch();
     } catch (error) {
       console.error('Error updating store config:', error);
       toast({

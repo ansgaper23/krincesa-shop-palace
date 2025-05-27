@@ -13,6 +13,7 @@ import { Plus, Edit, Trash2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useQueryClient } from '@tanstack/react-query';
+import { ImageUpload } from './ImageUpload';
 
 const ProductsManager = () => {
   const { data: products, refetch: refetchProducts } = useAllProducts();
@@ -52,7 +53,6 @@ const ProductsManager = () => {
   };
 
   const invalidateQueries = () => {
-    // Invalidate all product-related queries to ensure fresh data
     queryClient.invalidateQueries({ queryKey: ['products'] });
     queryClient.invalidateQueries({ queryKey: ['all-products'] });
     queryClient.refetchQueries({ queryKey: ['products'] });
@@ -61,21 +61,43 @@ const ProductsManager = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Submitting form data:', formData);
+    
+    if (!formData.name.trim() || !formData.price || !formData.wholesale_price) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios.",
+        variant: "destructive",
+      });
+      return;
+    }
     
     const productData = {
-      ...formData,
+      name: formData.name.trim(),
+      description: formData.description?.trim() || null,
+      brand: formData.brand?.trim() || null,
+      category_id: formData.category_id || null,
       price: parseFloat(formData.price),
       wholesale_price: parseFloat(formData.wholesale_price),
-      min_wholesale_quantity: parseInt(formData.min_wholesale_quantity),
-      category_id: formData.category_id || null
+      min_wholesale_quantity: parseInt(formData.min_wholesale_quantity) || 3,
+      image_url: formData.image_url || null,
+      show_dozen_message: formData.show_dozen_message,
+      is_active: formData.is_active,
+      updated_at: new Date().toISOString()
     };
+
+    console.log('Product data to save:', productData);
 
     try {
       if (editingProduct) {
-        const { error } = await supabase
+        console.log('Updating product with ID:', editingProduct.id);
+        const { data, error } = await supabase
           .from('products')
           .update(productData)
-          .eq('id', editingProduct.id);
+          .eq('id', editingProduct.id)
+          .select();
+        
+        console.log('Update result:', { data, error });
         
         if (error) throw error;
         
@@ -84,9 +106,13 @@ const ProductsManager = () => {
           description: "El producto se ha actualizado correctamente.",
         });
       } else {
-        const { error } = await supabase
+        console.log('Creating new product');
+        const { data, error } = await supabase
           .from('products')
-          .insert([productData]);
+          .insert([productData])
+          .select();
+        
+        console.log('Insert result:', { data, error });
         
         if (error) throw error;
         
@@ -96,9 +122,8 @@ const ProductsManager = () => {
         });
       }
       
-      // Force refresh all product queries
       invalidateQueries();
-      refetchProducts();
+      await refetchProducts();
       setIsDialogOpen(false);
       resetForm();
     } catch (error) {
@@ -112,6 +137,7 @@ const ProductsManager = () => {
   };
 
   const handleEdit = (product: any) => {
+    console.log('Editing product:', product);
     setEditingProduct(product);
     setFormData({
       name: product.name || '',
@@ -144,9 +170,8 @@ const ProductsManager = () => {
         description: "El producto se ha eliminado correctamente.",
       });
       
-      // Force refresh all product queries
       invalidateQueries();
-      refetchProducts();
+      await refetchProducts();
     } catch (error) {
       console.error('Error deleting product:', error);
       toast({
@@ -263,15 +288,11 @@ const ProductsManager = () => {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="image_url">URL de Imagen</Label>
-                <Input
-                  id="image_url"
-                  value={formData.image_url}
-                  onChange={(e) => setFormData({ ...formData, image_url: e.target.value })}
-                  placeholder="https://..."
-                />
-              </div>
+              <ImageUpload
+                value={formData.image_url}
+                onChange={(url) => setFormData({ ...formData, image_url: url })}
+                label="Imagen del Producto"
+              />
 
               <div className="flex items-center space-x-4">
                 <div className="flex items-center space-x-2">

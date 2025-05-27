@@ -107,9 +107,9 @@ const Index = () => {
               <p className="text-gray-600">Descubre nuestros productos de belleza y accesorios</p>
             </div>
 
-            {/* Products Grid */}
+            {/* Products Grid - Cambiado a 2 columnas en móvil, más columnas en pantallas grandes */}
             {productsLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
                     <div className="h-48 bg-gray-200"></div>
@@ -122,7 +122,7 @@ const Index = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {filteredProducts.map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
