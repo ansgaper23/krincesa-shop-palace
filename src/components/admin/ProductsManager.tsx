@@ -74,7 +74,6 @@ const ProductsManager = () => {
       return;
     }
 
-    // Si no es solo por mayor, debe tener precio por mayor
     if (!formData.wholesale_only && !formData.wholesale_price) {
       toast({
         title: "Error",
@@ -101,17 +100,18 @@ const ProductsManager = () => {
     console.log('Product data to save:', productData);
 
     try {
+      let result;
       if (editingProduct) {
         console.log('Updating product with ID:', editingProduct.id);
-        const { data, error } = await supabase
+        result = await supabase
           .from('products')
           .update(productData)
           .eq('id', editingProduct.id)
           .select();
         
-        console.log('Update result:', { data, error });
+        console.log('Update result:', result);
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         
         toast({
           title: "Producto actualizado",
@@ -119,14 +119,14 @@ const ProductsManager = () => {
         });
       } else {
         console.log('Creating new product');
-        const { data, error } = await supabase
+        result = await supabase
           .from('products')
           .insert([productData])
           .select();
         
-        console.log('Insert result:', { data, error });
+        console.log('Insert result:', result);
         
-        if (error) throw error;
+        if (result.error) throw result.error;
         
         toast({
           title: "Producto creado",

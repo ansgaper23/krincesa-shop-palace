@@ -21,9 +21,9 @@ const CategoriesManager = () => {
   const [editingCategory, setEditingCategory] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
 
-  const invalidateQueries = () => {
-    queryClient.invalidateQueries({ queryKey: ['categories'] });
-    queryClient.refetchQueries({ queryKey: ['categories'] });
+  const invalidateQueries = async () => {
+    await queryClient.invalidateQueries({ queryKey: ['categories'] });
+    await queryClient.refetchQueries({ queryKey: ['categories'] });
   };
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -32,26 +32,29 @@ const CategoriesManager = () => {
     if (!newCategoryName.trim()) return;
 
     try {
-      const { error } = await supabase
+      const result = await supabase
         .from('categories')
-        .insert([{ name: newCategoryName.trim() }]);
+        .insert([{ name: newCategoryName.trim() }])
+        .select();
       
-      if (error) throw error;
+      console.log('Create category result:', result);
+      
+      if (result.error) throw result.error;
       
       toast({
         title: "Categoría creada",
         description: "La categoría se ha creado correctamente.",
       });
       
-      invalidateQueries();
-      refetch();
+      await invalidateQueries();
+      await refetch();
       setNewCategoryName('');
       setIsDialogOpen(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating category:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al crear la categoría.",
+        description: error.message || "Hubo un error al crear la categoría.",
         variant: "destructive",
       });
     }
@@ -61,26 +64,29 @@ const CategoriesManager = () => {
     if (!newName.trim()) return;
 
     try {
-      const { error } = await supabase
+      const result = await supabase
         .from('categories')
         .update({ name: newName.trim() })
-        .eq('id', categoryId);
+        .eq('id', categoryId)
+        .select();
       
-      if (error) throw error;
+      console.log('Update category result:', result);
+      
+      if (result.error) throw result.error;
       
       toast({
         title: "Categoría actualizada",
         description: "La categoría se ha actualizado correctamente.",
       });
       
-      invalidateQueries();
-      refetch();
+      await invalidateQueries();
+      await refetch();
       setEditingCategory(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating category:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al actualizar la categoría.",
+        description: error.message || "Hubo un error al actualizar la categoría.",
         variant: "destructive",
       });
     }
@@ -90,25 +96,27 @@ const CategoriesManager = () => {
     if (!confirm('¿Estás seguro de que quieres eliminar esta categoría?')) return;
     
     try {
-      const { error } = await supabase
+      const result = await supabase
         .from('categories')
         .delete()
         .eq('id', categoryId);
       
-      if (error) throw error;
+      console.log('Delete category result:', result);
+      
+      if (result.error) throw result.error;
       
       toast({
         title: "Categoría eliminada",
         description: "La categoría se ha eliminado correctamente.",
       });
       
-      invalidateQueries();
-      refetch();
-    } catch (error) {
+      await invalidateQueries();
+      await refetch();
+    } catch (error: any) {
       console.error('Error deleting category:', error);
       toast({
         title: "Error",
-        description: "Hubo un error al eliminar la categoría.",
+        description: error.message || "Hubo un error al eliminar la categoría.",
         variant: "destructive",
       });
     }

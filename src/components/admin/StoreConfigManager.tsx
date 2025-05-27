@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { ImageUpload } from './ImageUpload';
 
 const StoreConfigManager = () => {
   const { data: storeConfig, refetch } = useStoreConfig();
@@ -64,7 +65,6 @@ const StoreConfigManager = () => {
     console.log('Submitting store config:', formData);
     
     try {
-      // Preparar datos a actualizar
       const updateData = {
         store_name: formData.store_name.trim(),
         logo_url: formData.logo_url.trim() || null,
@@ -77,37 +77,31 @@ const StoreConfigManager = () => {
         updated_at: new Date().toISOString()
       };
 
+      let result;
       if (storeConfig?.id) {
-        // Actualizar configuración existente
         console.log('Updating existing config with ID:', storeConfig.id);
-        const { data, error } = await supabase
+        result = await supabase
           .from('store_config')
           .update(updateData)
           .eq('id', storeConfig.id)
           .select();
-        
-        console.log('Update result:', { data, error });
-        
-        if (error) throw error;
       } else {
-        // Crear nueva configuración
         console.log('Creating new config');
-        const { data, error } = await supabase
+        result = await supabase
           .from('store_config')
           .insert([updateData])
           .select();
-        
-        console.log('Insert result:', { data, error });
-        
-        if (error) throw error;
       }
+      
+      console.log('Operation result:', result);
+      
+      if (result.error) throw result.error;
       
       toast({
         title: "Configuración actualizada",
         description: "La configuración de la tienda se ha guardado correctamente.",
       });
       
-      // Invalidar queries y recargar datos
       await invalidateQueries();
       await refetch();
       
@@ -138,12 +132,10 @@ const StoreConfigManager = () => {
         </div>
         
         <div>
-          <Label htmlFor="logo_url">URL del Logo</Label>
-          <Input
-            id="logo_url"
+          <ImageUpload
             value={formData.logo_url}
-            onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-            placeholder="https://..."
+            onChange={(url) => setFormData({ ...formData, logo_url: url })}
+            label="Logo de la Tienda"
           />
         </div>
       </div>
