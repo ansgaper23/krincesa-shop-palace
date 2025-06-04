@@ -8,7 +8,6 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
-import { ImageUpload } from './ImageUpload';
 
 const StoreConfigManager = () => {
   const { data: storeConfig, refetch } = useStoreConfig();
@@ -95,21 +94,28 @@ const StoreConfigManager = () => {
       
       console.log('Operation result:', result);
       
-      if (result.error) throw result.error;
+      if (result.error) {
+        console.error('Supabase error:', result.error);
+        throw result.error;
+      }
       
-      toast({
-        title: "Configuración actualizada",
-        description: "La configuración de la tienda se ha guardado correctamente.",
-      });
-      
-      await invalidateQueries();
-      await refetch();
+      if (result.data && result.data.length > 0) {
+        toast({
+          title: "Configuración guardada",
+          description: "La configuración de la tienda se ha guardado correctamente.",
+        });
+        
+        await invalidateQueries();
+        await refetch();
+      } else {
+        throw new Error('No se recibieron datos de la operación');
+      }
       
     } catch (error: any) {
       console.error('Error updating store config:', error);
       toast({
         title: "Error",
-        description: error.message || "Hubo un error al actualizar la configuración.",
+        description: error.message || "Hubo un error al guardar la configuración.",
         variant: "destructive",
       });
     } finally {
@@ -132,10 +138,12 @@ const StoreConfigManager = () => {
         </div>
         
         <div>
-          <ImageUpload
+          <Label htmlFor="logo_url">URL del Logo</Label>
+          <Input
+            id="logo_url"
             value={formData.logo_url}
-            onChange={(url) => setFormData({ ...formData, logo_url: url })}
-            label="Logo de la Tienda"
+            onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
+            placeholder="https://ejemplo.com/logo.png"
           />
         </div>
       </div>
