@@ -163,6 +163,7 @@ export type Database = {
           instagram_url: string | null
           logo_url: string | null
           privacy_policy: string | null
+          site_description: string | null
           store_name: string
           terms_and_conditions: string | null
           tiktok_url: string | null
@@ -176,6 +177,7 @@ export type Database = {
           instagram_url?: string | null
           logo_url?: string | null
           privacy_policy?: string | null
+          site_description?: string | null
           store_name?: string
           terms_and_conditions?: string | null
           tiktok_url?: string | null
@@ -189,6 +191,7 @@ export type Database = {
           instagram_url?: string | null
           logo_url?: string | null
           privacy_policy?: string | null
+          site_description?: string | null
           store_name?: string
           terms_and_conditions?: string | null
           tiktok_url?: string | null

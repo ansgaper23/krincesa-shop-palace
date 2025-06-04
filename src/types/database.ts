@@ -48,6 +48,7 @@ export interface StoreConfig {
   tiktok_url: string | null;
   terms_and_conditions: string | null;
   privacy_policy: string | null;
+  site_description: string | null;
 }
 
 export interface Order {

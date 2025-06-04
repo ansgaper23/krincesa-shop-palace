@@ -24,7 +24,8 @@ const StoreConfigManager = () => {
     facebook_url: '',
     tiktok_url: '',
     terms_and_conditions: '',
-    privacy_policy: ''
+    privacy_policy: '',
+    site_description: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -41,7 +42,8 @@ const StoreConfigManager = () => {
         facebook_url: storeConfig.facebook_url || '',
         tiktok_url: storeConfig.tiktok_url || '',
         terms_and_conditions: storeConfig.terms_and_conditions || '',
-        privacy_policy: storeConfig.privacy_policy || ''
+        privacy_policy: storeConfig.privacy_policy || '',
+        site_description: storeConfig.site_description || ''
       });
     }
   }, [storeConfig]);
@@ -77,6 +79,7 @@ const StoreConfigManager = () => {
         tiktok_url: formData.tiktok_url.trim() || null,
         terms_and_conditions: formData.terms_and_conditions.trim() || null,
         privacy_policy: formData.privacy_policy.trim() || null,
+        site_description: formData.site_description.trim() || null,
         updated_at: new Date().toISOString()
       };
 
@@ -151,6 +154,17 @@ const StoreConfigManager = () => {
             placeholder="info@krincesa.com"
           />
         </div>
+      </div>
+
+      <div>
+        <Label htmlFor="site_description">Descripción del Sitio Web</Label>
+        <Textarea
+          id="site_description"
+          value={formData.site_description}
+          onChange={(e) => setFormData({ ...formData, site_description: e.target.value })}
+          rows={3}
+          placeholder="Tu tienda de confianza para productos de belleza y accesorios."
+        />
       </div>
 
       <div>
