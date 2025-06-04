@@ -41,10 +41,23 @@ export interface StoreConfig {
   id: string;
   store_name: string;
   logo_url: string | null;
+  email: string | null;
   whatsapp_number: string | null;
   instagram_url: string | null;
   facebook_url: string | null;
   tiktok_url: string | null;
   terms_and_conditions: string | null;
   privacy_policy: string | null;
+}
+
+export interface Order {
+  id: string;
+  customer_name: string;
+  customer_phone: string;
+  customer_email: string | null;
+  total_amount: number;
+  status: string;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
 }

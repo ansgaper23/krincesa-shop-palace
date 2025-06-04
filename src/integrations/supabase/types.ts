@@ -60,6 +60,42 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string | null
+          customer_name: string
+          customer_phone: string
+          id: string
+          notes: string | null
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name: string
+          customer_phone: string
+          id?: string
+          notes?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string | null
+          customer_name?: string
+          customer_phone?: string
+          id?: string
+          notes?: string | null
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       products: {
         Row: {
           additional_images: string[] | null
@@ -121,6 +157,7 @@ export type Database = {
       }
       store_config: {
         Row: {
+          email: string | null
           facebook_url: string | null
           id: string
           instagram_url: string | null
@@ -133,6 +170,7 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          email?: string | null
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null
@@ -145,6 +183,7 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          email?: string | null
           facebook_url?: string | null
           id?: string
           instagram_url?: string | null

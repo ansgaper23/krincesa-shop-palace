@@ -11,24 +11,10 @@ import { Plus, Edit, Trash2, Eye } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { useQueryClient } from '@tanstack/react-query';
-
-interface Order {
-  id: string;
-  customer_name: string;
-  customer_phone: string;
-  customer_email?: string;
-  total_amount: number;
-  status: string;
-  notes?: string;
-  created_at: string;
-  updated_at: string;
-  order_items: any[];
-}
+import { Order } from '@/types/database';
 
 const OrdersManager = () => {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   
   const [orders, setOrders] = useState<Order[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
