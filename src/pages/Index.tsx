@@ -1,21 +1,23 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Search, ShoppingCart, Menu } from "lucide-react";
 import { Link } from "react-router-dom";
 import { ProductCard } from "@/components/ProductCard";
 import { Sidebar } from "@/components/Sidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useProducts, useCategories } from "@/hooks/useProducts";
+import { useProducts, useCategories, useStoreConfig } from "@/hooks/useProducts";
 import { useCart } from "@/hooks/useCart";
 
 const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [visibleProducts, setVisibleProducts] = useState(16); // 2 columnas x 8 filas
   
   const { data: products = [], isLoading: productsLoading } = useProducts();
   const { data: categories = [] } = useCategories();
+  const { data: storeConfig } = useStoreConfig();
   const { getItemCount, getTotal } = useCart();
 
   // Agregar "Todas" al inicio de las categorías
@@ -28,6 +30,33 @@ const Index = () => {
                            (product.categories?.name === selectedCategory);
     return matchesSearch && matchesCategory;
   });
+
+  const displayedProducts = filteredProducts.slice(0, visibleProducts);
+
+  const loadMoreProducts = () => {
+    setVisibleProducts(prev => prev + 16);
+  };
+
+  // Cargar más productos cuando el usuario haga scroll cerca del final
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.innerHeight + document.documentElement.scrollTop !== document.documentElement.offsetHeight) return;
+      if (displayedProducts.length < filteredProducts.length) {
+        loadMoreProducts();
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [displayedProducts.length, filteredProducts.length]);
+
+  // Reset visible products when filters change
+  useEffect(() => {
+    setVisibleProducts(16);
+  }, [searchTerm, selectedCategory]);
+
+  const storeName = storeConfig?.store_name || "Krincesa";
+  const logoUrl = storeConfig?.logo_url;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -47,8 +76,21 @@ const Index = () => {
 
             {/* Logo */}
             <div className="flex items-center">
-              <Link to="/" className="bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-2 rounded-lg font-bold text-xl">
-                👑 Krincesa
+              <Link to="/" className="flex items-center space-x-2">
+                {logoUrl ? (
+                  <img 
+                    src={logoUrl} 
+                    alt={storeName}
+                    className="h-10 w-auto"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none';
+                      e.currentTarget.nextElementSibling.style.display = 'block';
+                    }}
+                  />
+                ) : null}
+                <div className={`bg-gradient-to-r from-pink-500 to-pink-600 text-white px-4 py-2 rounded-lg font-bold text-xl ${logoUrl ? 'hidden' : ''}`}>
+                  👑 {storeName}
+                </div>
               </Link>
             </div>
 
@@ -107,10 +149,10 @@ const Index = () => {
               <p className="text-gray-600">Descubre nuestros productos de belleza y accesorios</p>
             </div>
 
-            {/* Products Grid - Optimizado para móvil */}
+            {/* Products Grid - 2 columnas x 8 filas */}
             {productsLoading ? (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-                {[...Array(8)].map((_, i) => (
+              <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                {[...Array(16)].map((_, i) => (
                   <div key={i} className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
                     <div className="aspect-square bg-gray-200"></div>
                     <div className="p-3 space-y-2">
@@ -122,11 +164,26 @@ const Index = () => {
                 ))}
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredProducts.map((product) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
+              <>
+                <div className="grid grid-cols-2 gap-3 sm:gap-4">
+                  {displayedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} />
+                  ))}
+                </div>
+
+                {/* Load More Button */}
+                {displayedProducts.length < filteredProducts.length && (
+                  <div className="text-center mt-8">
+                    <Button 
+                      onClick={loadMoreProducts}
+                      variant="outline"
+                      className="px-8 py-2"
+                    >
+                      Cargar más productos
+                    </Button>
+                  </div>
+                )}
+              </>
             )}
 
             {!productsLoading && filteredProducts.length === 0 && (
@@ -143,22 +200,32 @@ const Index = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div>
-              <h3 className="font-bold text-lg mb-4 text-pink-600">Krincesa Distribuidora</h3>
+              <h3 className="font-bold text-lg mb-4 text-pink-600">{storeName} Distribuidora</h3>
               <p className="text-gray-600 text-sm">Tu tienda de confianza para productos de belleza y accesorios.</p>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4">Contacto</h3>
               <div className="space-y-2 text-gray-600 text-sm">
-                <p>📱 WhatsApp: +51 999 999 999</p>
-                <p>📧 Email: info@krincesa.com</p>
+                {storeConfig?.whatsapp_number && (
+                  <p>📱 WhatsApp: {storeConfig.whatsapp_number}</p>
+                )}
+                {storeConfig?.email && (
+                  <p>📧 Email: {storeConfig.email}</p>
+                )}
               </div>
             </div>
             <div>
               <h3 className="font-bold text-lg mb-4">Síguenos</h3>
               <div className="flex space-x-4 text-sm">
-                <a href="#" className="text-pink-500 hover:text-pink-600">Facebook</a>
-                <a href="#" className="text-pink-500 hover:text-pink-600">Instagram</a>
-                <a href="#" className="text-pink-500 hover:text-pink-600">TikTok</a>
+                {storeConfig?.facebook_url && (
+                  <a href={storeConfig.facebook_url} className="text-pink-500 hover:text-pink-600">Facebook</a>
+                )}
+                {storeConfig?.instagram_url && (
+                  <a href={storeConfig.instagram_url} className="text-pink-500 hover:text-pink-600">Instagram</a>
+                )}
+                {storeConfig?.tiktok_url && (
+                  <a href={storeConfig.tiktok_url} className="text-pink-500 hover:text-pink-600">TikTok</a>
+                )}
               </div>
             </div>
           </div>

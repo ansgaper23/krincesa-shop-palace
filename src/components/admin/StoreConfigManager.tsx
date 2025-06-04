@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { useQueryClient } from '@tanstack/react-query';
+import { ImageUpload } from './ImageUpload';
 
 const StoreConfigManager = () => {
   const { data: storeConfig, refetch } = useStoreConfig();
@@ -17,6 +18,7 @@ const StoreConfigManager = () => {
   const [formData, setFormData] = useState({
     store_name: '',
     logo_url: '',
+    email: '',
     whatsapp_number: '',
     instagram_url: '',
     facebook_url: '',
@@ -33,6 +35,7 @@ const StoreConfigManager = () => {
       setFormData({
         store_name: storeConfig.store_name || '',
         logo_url: storeConfig.logo_url || '',
+        email: storeConfig.email || '',
         whatsapp_number: storeConfig.whatsapp_number || '',
         instagram_url: storeConfig.instagram_url || '',
         facebook_url: storeConfig.facebook_url || '',
@@ -67,6 +70,7 @@ const StoreConfigManager = () => {
       const updateData = {
         store_name: formData.store_name.trim(),
         logo_url: formData.logo_url.trim() || null,
+        email: formData.email.trim() || null,
         whatsapp_number: formData.whatsapp_number.trim() || null,
         instagram_url: formData.instagram_url.trim() || null,
         facebook_url: formData.facebook_url.trim() || null,
@@ -138,14 +142,23 @@ const StoreConfigManager = () => {
         </div>
         
         <div>
-          <Label htmlFor="logo_url">URL del Logo</Label>
+          <Label htmlFor="email">Correo Electrónico</Label>
           <Input
-            id="logo_url"
-            value={formData.logo_url}
-            onChange={(e) => setFormData({ ...formData, logo_url: e.target.value })}
-            placeholder="https://ejemplo.com/logo.png"
+            id="email"
+            type="email"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+            placeholder="info@krincesa.com"
           />
         </div>
+      </div>
+
+      <div>
+        <ImageUpload
+          value={formData.logo_url}
+          onChange={(url) => setFormData({ ...formData, logo_url: url })}
+          label="Logo de la Tienda"
+        />
       </div>
 
       <div className="space-y-4">

@@ -7,6 +7,7 @@ import ProductsManager from '@/components/admin/ProductsManager';
 import StoreConfigManager from '@/components/admin/StoreConfigManager';
 import CouponsManager from '@/components/admin/CouponsManager';
 import CategoriesManager from '@/components/admin/CategoriesManager';
+import OrdersManager from '@/components/admin/OrdersManager';
 
 const Admin = () => {
   return (
@@ -20,9 +21,10 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="products" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="products">Productos</TabsTrigger>
             <TabsTrigger value="categories">Categorías</TabsTrigger>
+            <TabsTrigger value="orders">Pedidos</TabsTrigger>
             <TabsTrigger value="store">Configuración</TabsTrigger>
             <TabsTrigger value="coupons">Cupones</TabsTrigger>
           </TabsList>
@@ -45,6 +47,17 @@ const Admin = () => {
               </CardHeader>
               <CardContent>
                 <CategoriesManager />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="orders">
+            <Card>
+              <CardHeader>
+                <CardTitle>Historial de Pedidos</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <OrdersManager />
               </CardContent>
             </Card>
           </TabsContent>
