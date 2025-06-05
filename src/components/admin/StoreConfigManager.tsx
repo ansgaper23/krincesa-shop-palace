@@ -48,11 +48,6 @@ const StoreConfigManager = () => {
     }
   }, [storeConfig]);
 
-  const invalidateQueries = async () => {
-    await queryClient.invalidateQueries({ queryKey: ['store-config'] });
-    await queryClient.refetchQueries({ queryKey: ['store-config'] });
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -90,13 +85,15 @@ const StoreConfigManager = () => {
           .from('store_config')
           .update(updateData)
           .eq('id', storeConfig.id)
-          .select();
+          .select()
+          .single();
       } else {
         console.log('Creating new config');
         result = await supabase
           .from('store_config')
           .insert([updateData])
-          .select();
+          .select()
+          .single();
       }
       
       console.log('Operation result:', result);
@@ -106,13 +103,14 @@ const StoreConfigManager = () => {
         throw result.error;
       }
       
-      if (result.data && result.data.length > 0) {
+      if (result.data) {
         toast({
           title: "Configuración guardada",
           description: "La configuración de la tienda se ha guardado correctamente.",
         });
         
-        await invalidateQueries();
+        // Invalidate and refetch the store config
+        await queryClient.invalidateQueries({ queryKey: ['store-config'] });
         await refetch();
       } else {
         throw new Error('No se recibieron datos de la operación');
