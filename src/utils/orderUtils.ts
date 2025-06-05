@@ -13,7 +13,8 @@ export interface OrderData {
 
 export const saveOrderToDatabase = async (orderData: OrderData) => {
   try {
-    const { data, error } = await supabase
+    // First, save the order
+    const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert([{
         customer_name: orderData.customer_name,
@@ -26,13 +27,36 @@ export const saveOrderToDatabase = async (orderData: OrderData) => {
       .select()
       .single();
 
-    if (error) {
-      console.error('Error saving order:', error);
-      throw error;
+    if (orderError) {
+      console.error('Error saving order:', orderError);
+      throw orderError;
     }
 
-    console.log('Order saved successfully:', data);
-    return data;
+    // Then, save the order items
+    const orderItems = orderData.items.map(item => ({
+      order_id: order.id,
+      product_id: item.product.id,
+      product_name: item.product.name,
+      product_price: item.quantity >= item.product.min_wholesale_quantity 
+        ? item.product.wholesale_price 
+        : item.product.price,
+      quantity: item.quantity,
+      total_price: (item.quantity >= item.product.min_wholesale_quantity 
+        ? item.product.wholesale_price 
+        : item.product.price) * item.quantity
+    }));
+
+    const { error: itemsError } = await supabase
+      .from('order_items')
+      .insert(orderItems);
+
+    if (itemsError) {
+      console.error('Error saving order items:', itemsError);
+      throw itemsError;
+    }
+
+    console.log('Order and items saved successfully:', order);
+    return order;
   } catch (error) {
     console.error('Failed to save order:', error);
     throw error;
@@ -41,7 +65,12 @@ export const saveOrderToDatabase = async (orderData: OrderData) => {
 
 export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any) => {
   const itemsList = orderData.items
-    .map(item => `• ${item.product.name} - Cantidad: ${item.quantity} - S/ ${(item.product.price * item.quantity).toFixed(2)}`)
+    .map(item => {
+      const price = item.quantity >= item.product.min_wholesale_quantity 
+        ? item.product.wholesale_price 
+        : item.product.price;
+      return `• ${item.product.name} - Cantidad: ${item.quantity} - S/ ${(price * item.quantity).toFixed(2)}`;
+    })
     .join('\n');
 
   const message = `🛍️ *NUEVO PEDIDO*

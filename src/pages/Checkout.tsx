@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -66,16 +65,19 @@ const Checkout = () => {
       };
 
       // Save order to database
-      await saveOrderToDatabase(orderData);
+      const savedOrder = await saveOrderToDatabase(orderData);
+
+      // Use the WhatsApp number from store config or fallback
+      const whatsappNumber = storeConfig?.whatsapp_number || "+51999999999";
+      console.log('Using WhatsApp number:', whatsappNumber);
 
       // Generate WhatsApp message
       const whatsappMessage = generateWhatsAppMessage(orderData, storeConfig);
-      const whatsappNumber = storeConfig?.whatsapp_number || "+51999999999";
 
       // Send WhatsApp message
       sendWhatsAppOrder(whatsappMessage, whatsappNumber);
 
-      // Clear cart and show success message
+      // Clear cart
       clearCart();
       
       toast({
@@ -83,8 +85,8 @@ const Checkout = () => {
         description: "Tu pedido ha sido guardado y enviado por WhatsApp.",
       });
 
-      // Redirect to home
-      navigate("/");
+      // Redirect to thank you page with order ID
+      navigate(`/thank-you?order=${savedOrder.id}`);
       
     } catch (error: any) {
       console.error("Error processing order:", error);

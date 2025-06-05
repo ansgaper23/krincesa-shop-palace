@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -7,16 +6,17 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Plus, Edit, Trash2, Eye } from 'lucide-react';
+import { Plus, Edit, Trash2, Eye, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { Order } from '@/types/database';
+import { Order, OrderItem } from '@/types/database';
 
 const OrdersManager = () => {
   const { toast } = useToast();
   
   const [orders, setOrders] = useState<Order[]>([]);
+  const [orderItems, setOrderItems] = useState<{ [orderId: string]: OrderItem[] }>({});
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [editingOrder, setEditingOrder] = useState<Order | null>(null);
@@ -49,6 +49,27 @@ const OrdersManager = () => {
       
       if (error) throw error;
       setOrders(data || []);
+
+      // Fetch order items for all orders
+      if (data && data.length > 0) {
+        const { data: items, error: itemsError } = await supabase
+          .from('order_items')
+          .select('*')
+          .in('order_id', data.map(order => order.id));
+
+        if (itemsError) throw itemsError;
+
+        // Group items by order_id
+        const itemsByOrder: { [orderId: string]: OrderItem[] } = {};
+        items?.forEach(item => {
+          if (!itemsByOrder[item.order_id]) {
+            itemsByOrder[item.order_id] = [];
+          }
+          itemsByOrder[item.order_id].push(item);
+        });
+        
+        setOrderItems(itemsByOrder);
+      }
     } catch (error: any) {
       console.error('Error fetching orders:', error);
       toast({
@@ -184,6 +205,41 @@ const OrdersManager = () => {
     }
   };
 
+  const generateInvoice = (order: Order) => {
+    const items = orderItems[order.id] || [];
+    const invoiceContent = `
+FACTURA / GUÍA DE VENTA
+========================
+
+Cliente: ${order.customer_name}
+Teléfono: ${order.customer_phone}
+${order.customer_email ? `Email: ${order.customer_email}` : ''}
+Fecha: ${new Date(order.created_at).toLocaleDateString()}
+Código: #${order.id.slice(0, 8).toUpperCase()}
+
+PRODUCTOS:
+${items.map(item => 
+  `• ${item.product_name} - Cant: ${item.quantity} - S/ ${item.product_price.toFixed(2)} = S/ ${item.total_price.toFixed(2)}`
+).join('\n')}
+
+TOTAL: S/ ${order.total_amount.toFixed(2)}
+Estado: ${statusOptions.find(s => s.value === order.status)?.label || order.status}
+
+${order.notes ? `Notas: ${order.notes}` : ''}
+    `.trim();
+
+    // Create and download file
+    const blob = new Blob([invoiceContent], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `factura-${order.id.slice(0, 8)}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+  };
+
   const getStatusBadge = (status: string) => {
     const statusConfig = statusOptions.find(opt => opt.value === status);
     return (
@@ -200,7 +256,7 @@ const OrdersManager = () => {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-xl font-semibold">Historial de Pedidos</h2>
+        <h2 className="text-xl font-semibold">Historial de Pedidos ({orders.length})</h2>
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogTrigger asChild>
             <Button onClick={resetForm} className="bg-pink-500 hover:bg-pink-600">
@@ -304,8 +360,10 @@ const OrdersManager = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead>Código</TableHead>
               <TableHead>Cliente</TableHead>
               <TableHead>Teléfono</TableHead>
+              <TableHead>Productos</TableHead>
               <TableHead>Monto</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Fecha</TableHead>
@@ -313,43 +371,69 @@ const OrdersManager = () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {orders.map((order) => (
-              <TableRow key={order.id}>
-                <TableCell className="font-medium">{order.customer_name}</TableCell>
-                <TableCell>{order.customer_phone}</TableCell>
-                <TableCell>S/ {order.total_amount?.toFixed(2) || '0.00'}</TableCell>
-                <TableCell>{getStatusBadge(order.status)}</TableCell>
-                <TableCell>
-                  {new Date(order.created_at).toLocaleDateString()}
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-1">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleView(order)}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleEdit(order)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleDelete(order.id)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {orders.map((order) => {
+              const items = orderItems[order.id] || [];
+              return (
+                <TableRow key={order.id}>
+                  <TableCell className="font-mono text-sm">
+                    #{order.id.slice(0, 8).toUpperCase()}
+                  </TableCell>
+                  <TableCell className="font-medium">{order.customer_name}</TableCell>
+                  <TableCell>{order.customer_phone}</TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      {items.length > 0 ? (
+                        <span>{items.length} producto{items.length !== 1 ? 's' : ''}</span>
+                      ) : (
+                        <span className="text-gray-400">Sin productos</span>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>S/ {order.total_amount?.toFixed(2) || '0.00'}</TableCell>
+                  <TableCell>{getStatusBadge(order.status)}</TableCell>
+                  <TableCell>
+                    {new Date(order.created_at).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => generateInvoice(order)}
+                        title="Generar factura"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleView(order)}
+                        title="Ver detalles"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleEdit(order)}
+                        title="Editar"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDelete(order.id)}
+                        className="text-red-600 hover:text-red-700"
+                        title="Eliminar"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
       </div>
@@ -357,42 +441,81 @@ const OrdersManager = () => {
       {orders.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">No hay pedidos registrados</p>
+          <p className="text-gray-400 text-sm mt-2">Los pedidos aparecerán aquí cuando los clientes realicen compras</p>
         </div>
       )}
 
       {/* View Order Dialog */}
       <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>Detalles del Pedido</DialogTitle>
+            <DialogTitle>Detalles del Pedido #{viewingOrder?.id.slice(0, 8).toUpperCase()}</DialogTitle>
           </DialogHeader>
           
           {viewingOrder && (
-            <div className="space-y-4">
-              <div>
-                <strong>Cliente:</strong> {viewingOrder.customer_name}
-              </div>
-              <div>
-                <strong>Teléfono:</strong> {viewingOrder.customer_phone}
-              </div>
-              {viewingOrder.customer_email && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <strong>Email:</strong> {viewingOrder.customer_email}
+                  <strong>Cliente:</strong> {viewingOrder.customer_name}
+                </div>
+                <div>
+                  <strong>Teléfono:</strong> {viewingOrder.customer_phone}
+                </div>
+                {viewingOrder.customer_email && (
+                  <div className="col-span-2">
+                    <strong>Email:</strong> {viewingOrder.customer_email}
+                  </div>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <strong>Estado:</strong> {getStatusBadge(viewingOrder.status)}
+                </div>
+                <div>
+                  <strong>Fecha:</strong> {new Date(viewingOrder.created_at).toLocaleString()}
+                </div>
+              </div>
+
+              {orderItems[viewingOrder.id] && orderItems[viewingOrder.id].length > 0 && (
+                <div>
+                  <strong>Productos:</strong>
+                  <div className="mt-2 border rounded-lg overflow-hidden">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>Producto</TableHead>
+                          <TableHead>Cantidad</TableHead>
+                          <TableHead>Precio Unit.</TableHead>
+                          <TableHead>Total</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {orderItems[viewingOrder.id].map((item) => (
+                          <TableRow key={item.id}>
+                            <TableCell>{item.product_name}</TableCell>
+                            <TableCell>{item.quantity}</TableCell>
+                            <TableCell>S/ {item.product_price.toFixed(2)}</TableCell>
+                            <TableCell>S/ {item.total_price.toFixed(2)}</TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
                 </div>
               )}
-              <div>
-                <strong>Monto Total:</strong> S/ {viewingOrder.total_amount?.toFixed(2) || '0.00'}
+
+              <div className="border-t pt-4">
+                <div className="flex justify-between items-center text-lg font-semibold">
+                  <span>Total del Pedido:</span>
+                  <span>S/ {viewingOrder.total_amount?.toFixed(2) || '0.00'}</span>
+                </div>
               </div>
-              <div>
-                <strong>Estado:</strong> {getStatusBadge(viewingOrder.status)}
-              </div>
-              <div>
-                <strong>Fecha:</strong> {new Date(viewingOrder.created_at).toLocaleString()}
-              </div>
+
               {viewingOrder.notes && (
                 <div>
                   <strong>Notas:</strong>
-                  <p className="mt-1 text-gray-600">{viewingOrder.notes}</p>
+                  <p className="mt-1 text-gray-600 bg-gray-50 p-3 rounded">{viewingOrder.notes}</p>
                 </div>
               )}
             </div>

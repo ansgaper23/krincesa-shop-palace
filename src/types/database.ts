@@ -62,3 +62,14 @@ export interface Order {
   created_at: string;
   updated_at: string;
 }
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  product_id: string;
+  product_name: string;
+  product_price: number;
+  quantity: number;
+  total_price: number;
+  created_at: string;
+}
