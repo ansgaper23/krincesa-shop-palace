@@ -78,13 +78,19 @@ const StoreConfigManager = () => {
         updated_at: new Date().toISOString()
       };
 
+      // Check if config exists first
+      const { data: existingConfig } = await supabase
+        .from('store_config')
+        .select('id')
+        .limit(1);
+
       let result;
-      if (storeConfig?.id) {
-        console.log('Updating existing config with ID:', storeConfig.id);
+      if (existingConfig && existingConfig.length > 0) {
+        console.log('Updating existing config with ID:', existingConfig[0].id);
         result = await supabase
           .from('store_config')
           .update(updateData)
-          .eq('id', storeConfig.id)
+          .eq('id', existingConfig[0].id)
           .select()
           .single();
       } else {
@@ -109,9 +115,24 @@ const StoreConfigManager = () => {
           description: "La configuración de la tienda se ha guardado correctamente.",
         });
         
-        // Invalidate and refetch the store config
+        // Force refresh all store config queries
+        queryClient.removeQueries({ queryKey: ['store-config'] });
         await queryClient.invalidateQueries({ queryKey: ['store-config'] });
         await refetch();
+        
+        // Update form data with saved data
+        setFormData({
+          store_name: result.data.store_name || '',
+          logo_url: result.data.logo_url || '',
+          email: result.data.email || '',
+          whatsapp_number: result.data.whatsapp_number || '',
+          instagram_url: result.data.instagram_url || '',
+          facebook_url: result.data.facebook_url || '',
+          tiktok_url: result.data.tiktok_url || '',
+          terms_and_conditions: result.data.terms_and_conditions || '',
+          privacy_policy: result.data.privacy_policy || '',
+          site_description: result.data.site_description || ''
+        });
       } else {
         throw new Error('No se recibieron datos de la operación');
       }
