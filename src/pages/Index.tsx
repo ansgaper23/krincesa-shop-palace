@@ -1,8 +1,8 @@
 
 import { useState } from "react";
 import { useCategories, useProducts, useStoreConfig } from "@/hooks/useProducts";
-import ProductCard from "@/components/ProductCard";
-import Sidebar from "@/components/Sidebar";
+import { ProductCard } from "@/components/ProductCard";
+import { Sidebar } from "@/components/Sidebar";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
