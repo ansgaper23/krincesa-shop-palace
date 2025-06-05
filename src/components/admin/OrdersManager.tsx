@@ -10,7 +10,10 @@ import { Plus, Edit, Trash2, Eye, FileText } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Order, OrderItem } from '@/types/database';
+import OrderProductsEditor from './OrderProductsEditor';
+import jsPDF from 'jspdf';
 
 const OrdersManager = () => {
   const { toast } = useToast();
@@ -205,39 +208,117 @@ const OrdersManager = () => {
     }
   };
 
-  const generateInvoice = (order: Order) => {
+  const generatePDF = (order: Order) => {
     const items = orderItems[order.id] || [];
-    const invoiceContent = `
-FACTURA / GUÍA DE VENTA
-========================
+    
+    const doc = new jsPDF();
+    
+    // Header
+    doc.setFontSize(20);
+    doc.setFont('helvetica', 'bold');
+    doc.text('GUÍA DE VENTA', 105, 30, { align: 'center' });
+    
+    // Order info
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Código: #${order.id.slice(0, 8).toUpperCase()}`, 20, 50);
+    doc.text(`Fecha: ${new Date(order.created_at).toLocaleDateString()}`, 20, 60);
+    
+    // Customer info
+    doc.setFont('helvetica', 'bold');
+    doc.text('DATOS DEL CLIENTE:', 20, 80);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`Cliente: ${order.customer_name}`, 20, 90);
+    doc.text(`Teléfono: ${order.customer_phone}`, 20, 100);
+    if (order.customer_email) {
+      doc.text(`Email: ${order.customer_email}`, 20, 110);
+    }
+    
+    // Products table header
+    const startY = order.customer_email ? 130 : 120;
+    doc.setFont('helvetica', 'bold');
+    doc.text('PRODUCTOS:', 20, startY);
+    
+    // Table headers
+    const tableStartY = startY + 10;
+    doc.setFont('helvetica', 'bold');
+    doc.text('Producto', 20, tableStartY);
+    doc.text('Cant.', 110, tableStartY);
+    doc.text('Precio', 140, tableStartY);
+    doc.text('Total', 170, tableStartY);
+    
+    // Draw line under headers
+    doc.line(20, tableStartY + 2, 190, tableStartY + 2);
+    
+    // Table content
+    doc.setFont('helvetica', 'normal');
+    let currentY = tableStartY + 10;
+    
+    items.forEach((item, index) => {
+      if (currentY > 270) { // New page if needed
+        doc.addPage();
+        currentY = 30;
+      }
+      
+      const productName = item.product_name.length > 25 
+        ? item.product_name.substring(0, 25) + '...'
+        : item.product_name;
+      
+      doc.text(productName, 20, currentY);
+      doc.text(item.quantity.toString(), 110, currentY);
+      doc.text(`S/ ${item.product_price.toFixed(2)}`, 140, currentY);
+      doc.text(`S/ ${item.total_price.toFixed(2)}`, 170, currentY);
+      
+      currentY += 10;
+    });
+    
+    // Total
+    currentY += 10;
+    doc.line(20, currentY, 190, currentY);
+    currentY += 10;
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text(`TOTAL: S/ ${order.total_amount.toFixed(2)}`, 170, currentY, { align: 'right' });
+    
+    // Status and notes
+    currentY += 20;
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'normal');
+    const statusLabel = statusOptions.find(s => s.value === order.status)?.label || order.status;
+    doc.text(`Estado: ${statusLabel}`, 20, currentY);
+    
+    if (order.notes) {
+      currentY += 15;
+      doc.setFont('helvetica', 'bold');
+      doc.text('Notas:', 20, currentY);
+      currentY += 10;
+      doc.setFont('helvetica', 'normal');
+      const notes = doc.splitTextToSize(order.notes, 170);
+      doc.text(notes, 20, currentY);
+    }
+    
+    // Download
+    doc.save(`guia-venta-${order.id.slice(0, 8)}.pdf`);
+  };
 
-Cliente: ${order.customer_name}
-Teléfono: ${order.customer_phone}
-${order.customer_email ? `Email: ${order.customer_email}` : ''}
-Fecha: ${new Date(order.created_at).toLocaleDateString()}
-Código: #${order.id.slice(0, 8).toUpperCase()}
+  const handleOrderItemsChange = (orderId: string, items: OrderItem[]) => {
+    setOrderItems(prev => ({
+      ...prev,
+      [orderId]: items
+    }));
+  };
 
-PRODUCTOS:
-${items.map(item => 
-  `• ${item.product_name} - Cant: ${item.quantity} - S/ ${item.product_price.toFixed(2)} = S/ ${item.total_price.toFixed(2)}`
-).join('\n')}
-
-TOTAL: S/ ${order.total_amount.toFixed(2)}
-Estado: ${statusOptions.find(s => s.value === order.status)?.label || order.status}
-
-${order.notes ? `Notas: ${order.notes}` : ''}
-    `.trim();
-
-    // Create and download file
-    const blob = new Blob([invoiceContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `factura-${order.id.slice(0, 8)}.txt`;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-    document.body.removeChild(a);
+  const handleOrderTotalChange = (orderId: string, total: number) => {
+    setOrders(prev => prev.map(order => 
+      order.id === orderId 
+        ? { ...order, total_amount: total }
+        : order
+    ));
+    
+    if (editingOrder && editingOrder.id === orderId) {
+      setEditingOrder(prev => prev ? { ...prev, total_amount: total } : null);
+      setFormData(prev => ({ ...prev, total_amount: total.toString() }));
+    }
   };
 
   const getStatusBadge = (status: string) => {
@@ -264,94 +345,116 @@ ${order.notes ? `Notas: ${order.notes}` : ''}
               Nuevo Pedido
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>
                 {editingOrder ? 'Editar Pedido' : 'Nuevo Pedido'}
               </DialogTitle>
             </DialogHeader>
             
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <Label htmlFor="customer_name">Nombre del Cliente *</Label>
-                <Input
-                  id="customer_name"
-                  value={formData.customer_name}
-                  onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
-                  required
-                />
-              </div>
+            <Tabs defaultValue="details" className="space-y-4">
+              <TabsList>
+                <TabsTrigger value="details">Detalles del Pedido</TabsTrigger>
+                {editingOrder && (
+                  <TabsTrigger value="products">Productos</TabsTrigger>
+                )}
+              </TabsList>
 
-              <div>
-                <Label htmlFor="customer_phone">Teléfono *</Label>
-                <Input
-                  id="customer_phone"
-                  value={formData.customer_phone}
-                  onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
-                  required
-                />
-              </div>
+              <TabsContent value="details">
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <Label htmlFor="customer_name">Nombre del Cliente *</Label>
+                    <Input
+                      id="customer_name"
+                      value={formData.customer_name}
+                      onChange={(e) => setFormData({ ...formData, customer_name: e.target.value })}
+                      required
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="customer_email">Email</Label>
-                <Input
-                  id="customer_email"
-                  type="email"
-                  value={formData.customer_email}
-                  onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="customer_phone">Teléfono *</Label>
+                    <Input
+                      id="customer_phone"
+                      value={formData.customer_phone}
+                      onChange={(e) => setFormData({ ...formData, customer_phone: e.target.value })}
+                      required
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="total_amount">Monto Total</Label>
-                <Input
-                  id="total_amount"
-                  type="number"
-                  step="0.01"
-                  value={formData.total_amount}
-                  onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="customer_email">Email</Label>
+                    <Input
+                      id="customer_email"
+                      type="email"
+                      value={formData.customer_email}
+                      onChange={(e) => setFormData({ ...formData, customer_email: e.target.value })}
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="status">Estado</Label>
-                <Select
-                  value={formData.status}
-                  onValueChange={(value) => setFormData({ ...formData, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {statusOptions.map((option) => (
-                      <SelectItem key={option.value} value={option.value}>
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  <div>
+                    <Label htmlFor="total_amount">Monto Total</Label>
+                    <Input
+                      id="total_amount"
+                      type="number"
+                      step="0.01"
+                      value={formData.total_amount}
+                      onChange={(e) => setFormData({ ...formData, total_amount: e.target.value })}
+                    />
+                  </div>
 
-              <div>
-                <Label htmlFor="notes">Notas</Label>
-                <Textarea
-                  id="notes"
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  rows={3}
-                  placeholder="Notas adicionales sobre el pedido..."
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="status">Estado</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value) => setFormData({ ...formData, status: value })}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {statusOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-              <div className="flex justify-end space-x-2">
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button type="submit" className="bg-pink-500 hover:bg-pink-600">
-                  {editingOrder ? 'Actualizar' : 'Crear'} Pedido
-                </Button>
-              </div>
-            </form>
+                  <div>
+                    <Label htmlFor="notes">Notas</Label>
+                    <Textarea
+                      id="notes"
+                      value={formData.notes}
+                      onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+                      rows={3}
+                      placeholder="Notas adicionales sobre el pedido..."
+                    />
+                  </div>
+
+                  <div className="flex justify-end space-x-2">
+                    <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" className="bg-pink-500 hover:bg-pink-600">
+                      {editingOrder ? 'Actualizar' : 'Crear'} Pedido
+                    </Button>
+                  </div>
+                </form>
+              </TabsContent>
+
+              {editingOrder && (
+                <TabsContent value="products">
+                  <OrderProductsEditor
+                    orderId={editingOrder.id}
+                    orderItems={orderItems[editingOrder.id] || []}
+                    onItemsChange={(items) => handleOrderItemsChange(editingOrder.id, items)}
+                    onTotalChange={(total) => handleOrderTotalChange(editingOrder.id, total)}
+                  />
+                </TabsContent>
+              )}
+            </Tabs>
           </DialogContent>
         </Dialog>
       </div>
@@ -399,8 +502,8 @@ ${order.notes ? `Notas: ${order.notes}` : ''}
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => generateInvoice(order)}
-                        title="Generar factura"
+                        onClick={() => generatePDF(order)}
+                        title="Generar guía de venta PDF"
                       >
                         <FileText className="h-4 w-4" />
                       </Button>
