@@ -15,18 +15,19 @@ const Header = () => {
     <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo y nombre */}
+          {/* Logo o nombre */}
           <Link to="/" className="flex items-center space-x-3">
-            {storeConfig?.logo_url && (
+            {storeConfig?.logo_url ? (
               <img
                 src={storeConfig.logo_url}
                 alt={storeConfig.store_name}
-                className="h-10 w-10 object-contain"
+                className="h-10 w-auto object-contain"
               />
+            ) : (
+              <h1 className="text-xl font-bold text-pink-600">
+                {storeConfig?.store_name || 'Krincesa Distribuidora'}
+              </h1>
             )}
-            <h1 className="text-xl font-bold text-pink-600">
-              {storeConfig?.store_name || 'Krincesa Distribuidora'}
-            </h1>
           </Link>
 
           {/* Navegación */}
