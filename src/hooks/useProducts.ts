@@ -148,7 +148,7 @@ export const useStoreConfig = () => {
       const { data, error } = await supabase
         .from('store_config')
         .select('*')
-        .order('created_at', { ascending: false })
+        .order('updated_at', { ascending: false })
         .limit(1);
 
       if (error) {
@@ -160,7 +160,9 @@ export const useStoreConfig = () => {
       console.log('Store config fetched:', config?.store_name);
       return config;
     },
-    staleTime: 30000, // 30 segundos
-    gcTime: 300000, // 5 minutos
+    staleTime: 0, // Always fetch fresh data
+    gcTime: 0, // Don't cache
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };
