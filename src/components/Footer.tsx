@@ -20,7 +20,7 @@ const Footer = () => {
           <div>
             <h3 className="text-lg font-semibold mb-4 text-pink-600">{storeConfig?.store_name || 'Krincesa Distribuidora'}</h3>
             <p className="text-gray-600 text-sm mb-4">
-              {storeConfig?.site_description || 'Tu tienda de confianza para productos de belleza y accesorios.'}
+              {storeConfig?.site_description || 'Tu tienda de confianza para productos de belleza y accesorios en todo el Perú.'}
             </p>
           </div>
 
@@ -61,6 +61,7 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-600 hover:text-pink-500 transition-colors"
+                  aria-label="Síguenos en Facebook"
                 >
                   <Facebook className="h-6 w-6" />
                 </a>
@@ -72,8 +73,23 @@ const Footer = () => {
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-600 hover:text-pink-500 transition-colors"
+                  aria-label="Síguenos en Instagram"
                 >
                   <Instagram className="h-6 w-6" />
+                </a>
+              )}
+              
+              {storeConfig?.tiktok_url && (
+                <a 
+                  href={storeConfig.tiktok_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-gray-600 hover:text-pink-500 transition-colors"
+                  aria-label="Síguenos en TikTok"
+                >
+                  <svg className="h-6 w-6" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 5 20.1a6.34 6.34 0 0 0 10.86-4.43v-7a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-1-.1z"/>
+                  </svg>
                 </a>
               )}
               
@@ -81,6 +97,7 @@ const Footer = () => {
                 <button 
                   onClick={handleWhatsAppClick}
                   className="text-gray-600 hover:text-pink-500 transition-colors"
+                  aria-label="Contáctanos por WhatsApp"
                 >
                   <MessageCircle className="h-6 w-6" />
                 </button>
@@ -91,7 +108,7 @@ const Footer = () => {
 
         <div className="border-t border-pink-200 mt-8 pt-6 text-center">
           <p className="text-gray-500 text-sm">
-            © 2024 {storeConfig?.store_name || 'Krincesa Distribuidora'}. Todos los derechos reservados.
+            © 2024 {storeConfig?.store_name || 'Krincesa Distribuidora'}. Todos los derechos reservados. Distribuidora nacional en Perú.
           </p>
         </div>
       </div>
