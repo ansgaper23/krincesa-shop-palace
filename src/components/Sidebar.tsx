@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, Menu, X } from "lucide-react";
@@ -27,6 +27,39 @@ export const Sidebar = ({
 }: SidebarProps) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  // Cerrar menú al presionar Escape
+  useEffect(() => {
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && isOpen) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isOpen]);
+
+  // Cerrar menú al cambiar el tamaño de pantalla a desktop
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 1024) { // lg breakpoint
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  const handleCategorySelect = (categoryId: string | null) => {
+    onCategorySelect(categoryId);
+    setIsOpen(false); // Cerrar automáticamente después de seleccionar
+  };
+
+  const closeMenu = () => {
+    setIsOpen(false);
+  };
+
   return (
     <>
       {/* Mobile menu button */}
@@ -36,25 +69,41 @@ export const Sidebar = ({
           size="sm"
           onClick={() => setIsOpen(!isOpen)}
           className="bg-white shadow-md"
+          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
         >
           {isOpen ? <X className="h-4 w-4" /> : <Menu className="h-4 w-4" />}
         </Button>
       </div>
 
-      {/* Overlay for mobile */}
+      {/* Overlay for mobile - más grande y fácil de hacer clic */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
-          onClick={() => setIsOpen(false)}
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden cursor-pointer"
+          onClick={closeMenu}
+          aria-label="Cerrar menú"
         />
       )}
 
       {/* Sidebar */}
       <aside className={cn(
         "bg-white rounded-lg shadow-md p-6 h-fit sticky top-6",
-        "fixed top-0 left-0 z-50 w-80 h-full transform transition-transform duration-300 lg:relative lg:transform-none lg:z-auto lg:w-80",
+        "fixed top-0 left-0 z-50 w-80 h-full transform transition-transform duration-300 lg:relative lg:transform-none lg:z-auto lg:w-80 lg:h-fit",
         isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}>
+        {/* Header del sidebar móvil con botón de cerrar */}
+        <div className="lg:hidden flex justify-between items-center mb-4 pb-2 border-b">
+          <h2 className="text-lg font-bold text-gray-800">Menú</h2>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={closeMenu}
+            className="p-1 h-8 w-8"
+            aria-label="Cerrar menú"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+
         {/* Search */}
         <div className="mb-6">
           <div className="relative">
@@ -74,13 +123,10 @@ export const Sidebar = ({
           <h2 className="text-lg font-bold text-gray-800 mb-4">Categorías</h2>
           <div className="space-y-2">
             <button
-              onClick={() => {
-                onCategorySelect(null);
-                setIsOpen(false);
-              }}
+              onClick={() => handleCategorySelect(null)}
               className={cn(
-                "w-full text-left px-4 py-2 rounded-md transition-colors duration-200",
-                "hover:bg-pink-50 hover:text-pink-600",
+                "w-full text-left px-4 py-3 rounded-md transition-colors duration-200 text-sm",
+                "hover:bg-pink-50 hover:text-pink-600 active:bg-pink-100",
                 !selectedCategory
                   ? "bg-pink-500 text-white"
                   : "text-gray-700"
@@ -91,13 +137,10 @@ export const Sidebar = ({
             {categories.map((category) => (
               <button
                 key={category.id}
-                onClick={() => {
-                  onCategorySelect(category.id);
-                  setIsOpen(false);
-                }}
+                onClick={() => handleCategorySelect(category.id)}
                 className={cn(
-                  "w-full text-left px-4 py-2 rounded-md transition-colors duration-200",
-                  "hover:bg-pink-50 hover:text-pink-600",
+                  "w-full text-left px-4 py-3 rounded-md transition-colors duration-200 text-sm",
+                  "hover:bg-pink-50 hover:text-pink-600 active:bg-pink-100",
                   selectedCategory === category.id
                     ? "bg-pink-500 text-white"
                     : "text-gray-700"
@@ -121,6 +164,7 @@ export const Sidebar = ({
             onClick={() => {
               const message = encodeURIComponent("¡Hola! Necesito ayuda, ¿pueden ayudarme?");
               window.open(`https://wa.me/+51999999999?text=${message}`, '_blank');
+              closeMenu(); // Cerrar menú después de la acción
             }}
           >
             💬 WhatsApp
