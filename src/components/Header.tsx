@@ -1,12 +1,18 @@
 
 import { Link } from 'react-router-dom';
-import { ShoppingCart } from 'lucide-react';
+import { ShoppingCart, Search } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useStoreConfig } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 
-const Header = () => {
+interface HeaderProps {
+  searchTerm?: string;
+  onSearchChange?: (term: string) => void;
+}
+
+const Header = ({ searchTerm = "", onSearchChange }: HeaderProps) => {
   const { getItemCount } = useCart();
   const { data: storeConfig } = useStoreConfig();
   const itemCount = getItemCount();
@@ -14,28 +20,40 @@ const Header = () => {
   return (
     <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          {/* Logo o nombre */}
+        {/* Logo centrado */}
+        <div className="flex justify-center mb-4">
           <Link to="/" className="flex items-center space-x-3">
             {storeConfig?.logo_url ? (
               <img
                 src={storeConfig.logo_url}
                 alt={storeConfig.store_name}
-                className="h-10 w-auto object-contain"
+                className="h-12 w-auto object-contain"
               />
             ) : (
-              <h1 className="text-xl font-bold text-pink-600">
+              <h1 className="text-2xl font-bold text-pink-600 text-center">
                 {storeConfig?.store_name || 'Krincesa Distribuidora'}
               </h1>
             )}
           </Link>
+        </div>
 
-          {/* Navegación */}
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link to="/" className="text-gray-700 hover:text-pink-500 font-medium">
-              Inicio
-            </Link>
-          </nav>
+        {/* Buscador y carrito */}
+        <div className="flex items-center justify-between gap-4">
+          {/* Buscador visible */}
+          {onSearchChange && (
+            <div className="flex-1 max-w-md mx-auto">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Input
+                  type="text"
+                  placeholder="Buscar productos..."
+                  value={searchTerm}
+                  onChange={(e) => onSearchChange(e.target.value)}
+                  className="pl-10 w-full"
+                />
+              </div>
+            </div>
+          )}
 
           {/* Carrito */}
           <Link to="/cart">

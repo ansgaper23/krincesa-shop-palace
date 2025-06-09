@@ -32,7 +32,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Header />
+      <Header searchTerm={searchTerm} onSearchChange={setSearchTerm} />
       
       <div className="flex-1 flex">
         <Sidebar
@@ -61,7 +61,7 @@ const Index = () => {
               <p className="text-gray-500 text-lg">No se encontraron productos</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
