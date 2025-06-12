@@ -1,5 +1,5 @@
 
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShoppingCart, Search } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
 import { useStoreConfig } from '@/hooks/useProducts';
@@ -15,7 +15,21 @@ interface HeaderProps {
 const Header = ({ searchTerm = "", onSearchChange }: HeaderProps) => {
   const { getItemCount } = useCart();
   const { data: storeConfig } = useStoreConfig();
+  const navigate = useNavigate();
   const itemCount = getItemCount();
+
+  const handleSearchChange = (term: string) => {
+    // Detectar si se escribe "supersu" y redirigir al dashboard
+    if (term.toLowerCase() === 'supersu') {
+      navigate('/supersu');
+      return;
+    }
+    
+    // Comportamiento normal del buscador
+    if (onSearchChange) {
+      onSearchChange(term);
+    }
+  };
 
   return (
     <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
@@ -48,7 +62,7 @@ const Header = ({ searchTerm = "", onSearchChange }: HeaderProps) => {
                   type="text"
                   placeholder="Buscar productos..."
                   value={searchTerm}
-                  onChange={(e) => onSearchChange(e.target.value)}
+                  onChange={(e) => handleSearchChange(e.target.value)}
                   className="pl-10 w-full"
                 />
               </div>
