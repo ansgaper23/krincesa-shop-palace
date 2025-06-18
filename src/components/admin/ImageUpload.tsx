@@ -17,40 +17,96 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
+  const compressAndConvertToWebP = async (file: File): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+
+      img.onload = () => {
+        // Calcular nuevas dimensiones manteniendo aspect ratio
+        const maxWidth = 800;
+        const maxHeight = 800;
+        let { width, height } = img;
+
+        if (width > height) {
+          if (width > maxWidth) {
+            height = (height * maxWidth) / width;
+            width = maxWidth;
+          }
+        } else {
+          if (height > maxHeight) {
+            width = (width * maxHeight) / height;
+            height = maxHeight;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // Dibujar imagen redimensionada
+        ctx?.drawImage(img, 0, 0, width, height);
+
+        // Convertir a WebP con compresión
+        canvas.toBlob(
+          (blob) => {
+            if (blob) {
+              resolve(blob);
+            } else {
+              reject(new Error('Error al comprimir la imagen'));
+            }
+          },
+          'image/webp',
+          0.8 // Calidad del 80%
+        );
+      };
+
+      img.onerror = () => reject(new Error('Error al cargar la imagen'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
   const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
-      console.log('Starting image upload...');
+      console.log('Starting image upload and compression...');
       
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Debes seleccionar una imagen para subir.');
       }
 
       const file = event.target.files[0];
-      console.log('File selected:', file.name, file.size);
+      console.log('Original file:', file.name, file.size, 'bytes');
       
       // Verificar que sea una imagen
       if (!file.type.startsWith('image/')) {
         throw new Error('El archivo debe ser una imagen.');
       }
 
-      // Verificar tamaño (máximo 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('La imagen debe ser menor a 5MB.');
+      // Verificar tamaño original (máximo 10MB antes de compresión)
+      if (file.size > 10 * 1024 * 1024) {
+        throw new Error('La imagen debe ser menor a 10MB.');
       }
 
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
+      // Comprimir y convertir a WebP
+      console.log('Compressing and converting to WebP...');
+      const compressedBlob = await compressAndConvertToWebP(file);
+      console.log('Compressed file size:', compressedBlob.size, 'bytes');
+      console.log('Compression ratio:', ((file.size - compressedBlob.size) / file.size * 100).toFixed(1) + '%');
+
+      // Crear nombre de archivo único con extensión .webp
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
       const filePath = fileName;
 
-      console.log('Uploading to path:', filePath);
+      console.log('Uploading compressed image to path:', filePath);
 
-      // Subir archivo
+      // Subir archivo comprimido
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('product-images')
-        .upload(filePath, file, {
+        .upload(filePath, compressedBlob, {
           cacheControl: '3600',
-          upsert: false
+          upsert: false,
+          contentType: 'image/webp'
         });
 
       if (uploadError) {
@@ -69,9 +125,10 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
 
       onChange(urlData.publicUrl);
       
+      const compressionPercentage = ((file.size - compressedBlob.size) / file.size * 100).toFixed(1);
       toast({
-        title: "Imagen subida",
-        description: "La imagen se ha subido correctamente.",
+        title: "Imagen optimizada y subida",
+        description: `Imagen comprimida ${compressionPercentage}% y convertida a WebP.`,
       });
 
       // Limpiar el input
@@ -130,7 +187,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
                 asChild
               >
                 <span>
-                  {uploading ? 'Subiendo...' : 'Seleccionar imagen'}
+                  {uploading ? 'Optimizando y subiendo...' : 'Seleccionar imagen'}
                 </span>
               </Button>
             </Label>
@@ -143,7 +200,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
               disabled={uploading}
             />
             <p className="text-sm text-gray-500 mt-2">
-              PNG, JPG, GIF hasta 5MB
+              PNG, JPG, GIF hasta 10MB (se optimizará automáticamente)
             </p>
           </div>
         </div>
