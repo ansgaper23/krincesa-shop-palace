@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
@@ -137,6 +138,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       image_url: formData.image_url || null,
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
+      slug: '', // El trigger de la base de datos generará el slug automáticamente
       updated_at: new Date().toISOString()
     };
 
@@ -280,6 +282,20 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
                 ))}
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            <div>
+              <Label htmlFor="price">Precio *</Label>
+              <Input
+                id="price"
+                type="number"
+                step="0.01"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                required
+              />
+            </div>
           </div>
 
           <div className="flex items-center space-x-2 mb-4">
