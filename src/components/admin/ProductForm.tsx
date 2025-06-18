@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
@@ -37,7 +36,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
     image_url: editingProduct?.image_url || '',
     show_dozen_message: editingProduct?.show_dozen_message || false,
     is_active: editingProduct?.is_active ?? true,
-    wholesale_only: editingProduct ? (editingProduct.price === editingProduct.wholesale_price && editingProduct.min_wholesale_quantity === 1) : false
+    has_wholesale: editingProduct ? editingProduct.wholesale_price !== editingProduct.price : false
   });
 
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -55,7 +54,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       image_url: '',
       show_dozen_message: false,
       is_active: true,
-      wholesale_only: false
+      has_wholesale: false
     });
     setNewCategoryName('');
     setShowNewCategoryForm(false);
@@ -112,16 +111,16 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
     if (!formData.name.trim() || !formData.price) {
       toast({
         title: "Error",
-        description: "Por favor completa todos los campos obligatorios.",
+        description: "Por favor completa el nombre y precio del producto.",
         variant: "destructive",
       });
       return;
     }
 
-    if (!formData.wholesale_only && !formData.wholesale_price) {
+    if (formData.has_wholesale && !formData.wholesale_price) {
       toast({
         title: "Error",
-        description: "Si no es solo precio por unidad, debe tener precio por mayor.",
+        description: "Si tiene precio por mayor, debe especificar el precio por mayor.",
         variant: "destructive",
       });
       return;
@@ -133,8 +132,8 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       brand: formData.brand?.trim() || null,
       category_id: formData.category_id || null,
       price: parseFloat(formData.price),
-      wholesale_price: formData.wholesale_only ? parseFloat(formData.price) : parseFloat(formData.wholesale_price || formData.price),
-      min_wholesale_quantity: formData.wholesale_only ? 1 : parseInt(formData.min_wholesale_quantity) || 3,
+      wholesale_price: formData.has_wholesale ? parseFloat(formData.wholesale_price || formData.price) : parseFloat(formData.price),
+      min_wholesale_quantity: formData.has_wholesale ? parseInt(formData.min_wholesale_quantity) || 3 : 1,
       image_url: formData.image_url || null,
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
@@ -211,11 +210,12 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
             </div>
             
             <div>
-              <Label htmlFor="brand">Marca</Label>
+              <Label htmlFor="brand">Marca (opcional)</Label>
               <Input
                 id="brand"
                 value={formData.brand}
                 onChange={(e) => setFormData({ ...formData, brand: e.target.value })}
+                placeholder="Ingresa la marca si aplica"
               />
             </div>
           </div>
@@ -284,46 +284,22 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
 
           <div className="flex items-center space-x-2 mb-4">
             <Switch
-              id="wholesale_only"
-              checked={formData.wholesale_only}
+              id="has_wholesale"
+              checked={formData.has_wholesale}
               onCheckedChange={(checked) => {
                 setFormData({ 
                   ...formData, 
-                  wholesale_only: checked,
-                  wholesale_price: checked ? formData.price : formData.wholesale_price,
-                  min_wholesale_quantity: checked ? '1' : '3'
+                  has_wholesale: checked,
+                  wholesale_price: checked ? formData.wholesale_price : '',
+                  min_wholesale_quantity: checked ? formData.min_wholesale_quantity : '1'
                 });
               }}
             />
-            <Label htmlFor="wholesale_only">Solo precio por unidad (sin precio por mayor)</Label>
+            <Label htmlFor="has_wholesale">¿Tiene precio por mayor?</Label>
           </div>
 
-          {formData.wholesale_only ? (
-            <div>
-              <Label htmlFor="price">Precio por Unidad *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
-              />
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="price">Precio por Unidad *</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  step="0.01"
-                  value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  required
-                />
-              </div>
-              
+          {formData.has_wholesale && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="wholesale_price">Precio por Mayor *</Label>
                 <Input

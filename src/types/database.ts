@@ -1,4 +1,3 @@
-
 export interface Product {
   id: string;
   name: string;
@@ -12,6 +11,7 @@ export interface Product {
   additional_images: string[] | null;
   show_dozen_message: boolean | null;
   is_active: boolean | null;
+  slug: string;
   created_at: string;
   updated_at: string;
 }

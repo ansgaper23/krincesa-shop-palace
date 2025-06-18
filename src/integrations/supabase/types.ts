@@ -158,6 +158,7 @@ export type Database = {
           name: string
           price: number
           show_dozen_message: boolean | null
+          slug: string
           updated_at: string
           wholesale_price: number
         }
@@ -174,6 +175,7 @@ export type Database = {
           name: string
           price: number
           show_dozen_message?: boolean | null
+          slug: string
           updated_at?: string
           wholesale_price: number
         }
@@ -190,6 +192,7 @@ export type Database = {
           name?: string
           price?: number
           show_dozen_message?: boolean | null
+          slug?: string
           updated_at?: string
           wholesale_price?: number
         }
@@ -253,7 +256,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_slug: {
+        Args: { input_text: string }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
