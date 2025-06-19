@@ -94,41 +94,33 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
       console.log('Compressed file size:', compressedBlob.size, 'bytes');
       console.log('Compression ratio:', ((file.size - compressedBlob.size) / file.size * 100).toFixed(1) + '%');
 
-      // Crear nombre de archivo único con extensión .webp
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.webp`;
-      const filePath = fileName;
+      // Crear FormData para enviar a la función Edge
+      const formData = new FormData();
+      formData.append('file', compressedBlob, 'image.webp');
 
-      console.log('Uploading compressed image to path:', filePath);
+      console.log('Uploading to Cloudflare R2...');
 
-      // Subir archivo comprimido
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, compressedBlob, {
-          cacheControl: '3600',
-          upsert: false,
-          contentType: 'image/webp'
-        });
+      // Llamar a la función Edge para subir a Cloudflare R2
+      const { data, error } = await supabase.functions.invoke('upload-to-r2', {
+        body: formData,
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
+      });
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError);
-        throw uploadError;
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
       }
 
-      console.log('Upload successful:', uploadData);
+      console.log('Upload successful:', data);
 
-      // Obtener URL pública
-      const { data: urlData } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
-      console.log('Public URL:', urlData.publicUrl);
-
-      onChange(urlData.publicUrl);
+      onChange(data.url);
       
       const compressionPercentage = ((file.size - compressedBlob.size) / file.size * 100).toFixed(1);
       toast({
-        title: "Imagen optimizada y subida",
-        description: `Imagen comprimida ${compressionPercentage}% y convertida a WebP.`,
+        title: "Imagen subida a Cloudflare R2",
+        description: `Imagen optimizada ${compressionPercentage}% y almacenada en CDN.`,
       });
 
       // Limpiar el input
@@ -187,7 +179,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
                 asChild
               >
                 <span>
-                  {uploading ? 'Optimizando y subiendo...' : 'Seleccionar imagen'}
+                  {uploading ? 'Subiendo a CDN...' : 'Seleccionar imagen'}
                 </span>
               </Button>
             </Label>
@@ -200,7 +192,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
               disabled={uploading}
             />
             <p className="text-sm text-gray-500 mt-2">
-              PNG, JPG, GIF hasta 10MB (se optimizará automáticamente)
+              PNG, JPG, GIF hasta 10MB (se subirá a Cloudflare R2 CDN)
             </p>
           </div>
         </div>
