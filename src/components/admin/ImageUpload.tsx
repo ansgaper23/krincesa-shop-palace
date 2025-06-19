@@ -69,14 +69,18 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
   const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
-      console.log('Starting image upload and compression...');
+      console.log('🚀 Starting image upload and compression...');
       
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Debes seleccionar una imagen para subir.');
       }
 
       const file = event.target.files[0];
-      console.log('Original file:', file.name, file.size, 'bytes');
+      console.log('📁 Original file:', {
+        name: file.name,
+        size: file.size,
+        type: file.type
+      });
       
       // Verificar que sea una imagen
       if (!file.type.startsWith('image/')) {
@@ -89,44 +93,56 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
       }
 
       // Comprimir y convertir a WebP
-      console.log('Compressing and converting to WebP...');
+      console.log('🔄 Compressing and converting to WebP...');
       const compressedBlob = await compressAndConvertToWebP(file);
-      console.log('Compressed file size:', compressedBlob.size, 'bytes');
-      console.log('Compression ratio:', ((file.size - compressedBlob.size) / file.size * 100).toFixed(1) + '%');
+      console.log('✅ Compressed file size:', compressedBlob.size, 'bytes');
+      console.log('📊 Compression ratio:', ((file.size - compressedBlob.size) / file.size * 100).toFixed(1) + '%');
 
       // Crear FormData para enviar a la función Edge
       const formData = new FormData();
       formData.append('file', compressedBlob, 'image.webp');
 
-      console.log('Uploading to Cloudflare R2...');
+      console.log('📤 Uploading to Cloudflare R2 via Edge Function...');
+      console.log('📦 FormData contents:', Array.from(formData.keys()));
 
       // Llamar a la función Edge para subir a Cloudflare R2
-      // NO especificar Content-Type, dejar que el navegador lo maneje automáticamente
       const { data, error } = await supabase.functions.invoke('upload-to-r2', {
         body: formData,
       });
 
       if (error) {
-        console.error('Upload error:', error);
-        throw error;
+        console.error('❌ Supabase Functions error:', error);
+        console.error('❌ Error details:', JSON.stringify(error, null, 2));
+        throw new Error(`Edge Function error: ${error.message || 'Unknown error'}`);
       }
 
-      console.log('Upload successful:', data);
+      if (!data) {
+        console.error('❌ No data returned from Edge Function');
+        throw new Error('No data returned from Edge Function');
+      }
+
+      console.log('✅ Upload successful:', data);
+
+      if (!data.url) {
+        console.error('❌ No URL in response:', data);
+        throw new Error('No URL returned from upload');
+      }
 
       onChange(data.url);
       
       const compressionPercentage = ((file.size - compressedBlob.size) / file.size * 100).toFixed(1);
       toast({
-        title: "Imagen subida a Cloudflare R2",
+        title: "✅ Imagen subida a Cloudflare R2",
         description: `Imagen optimizada ${compressionPercentage}% y almacenada en CDN.`,
       });
 
       // Limpiar el input
       event.target.value = '';
     } catch (error: any) {
-      console.error('Error uploading image:', error);
+      console.error('💥 Error uploading image:', error);
+      console.error('💥 Error stack:', error.stack);
       toast({
-        title: "Error al subir imagen",
+        title: "❌ Error al subir imagen",
         description: error.message || "Hubo un error al subir la imagen.",
         variant: "destructive",
       });
@@ -177,7 +193,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
                 asChild
               >
                 <span>
-                  {uploading ? 'Subiendo a CDN...' : 'Seleccionar imagen'}
+                  {uploading ? '📤 Subiendo a CDN...' : '📁 Seleccionar imagen'}
                 </span>
               </Button>
             </Label>

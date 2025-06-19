@@ -8,41 +8,71 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    console.log('🚀 Starting R2 upload process...');
+    
+    // Log environment variables (without revealing the actual values)
     const R2_ACCESS_KEY_ID = Deno.env.get('CLOUDFLARE_R2_ACCESS_KEY_ID');
     const R2_SECRET_ACCESS_KEY = Deno.env.get('CLOUDFLARE_R2_SECRET_ACCESS_KEY');
     const R2_BUCKET_NAME = Deno.env.get('CLOUDFLARE_R2_BUCKET_NAME');
     const R2_ACCOUNT_ID = Deno.env.get('CLOUDFLARE_R2_ACCOUNT_ID');
 
+    console.log('📋 Environment check:', {
+      hasAccessKey: !!R2_ACCESS_KEY_ID,
+      hasSecretKey: !!R2_SECRET_ACCESS_KEY,
+      hasBucketName: !!R2_BUCKET_NAME,
+      hasAccountId: !!R2_ACCOUNT_ID,
+      bucketName: R2_BUCKET_NAME,
+      accountId: R2_ACCOUNT_ID
+    });
+
     if (!R2_ACCESS_KEY_ID || !R2_SECRET_ACCESS_KEY || !R2_BUCKET_NAME || !R2_ACCOUNT_ID) {
+      console.error('❌ Missing R2 configuration');
       throw new Error('Missing R2 configuration');
     }
 
+    console.log('📝 Request method:', req.method);
+    console.log('📝 Request headers:', Object.fromEntries(req.headers.entries()));
+
     const formData = await req.formData();
+    console.log('📦 FormData keys:', Array.from(formData.keys()));
+    
     const file = formData.get('file') as File;
     
     if (!file) {
+      console.error('❌ No file provided');
       throw new Error('No file provided');
     }
+
+    console.log('📁 File info:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
 
     // Generate unique filename
     const timestamp = Date.now();
     const randomString = Math.random().toString(36).substring(2);
     const fileName = `${timestamp}-${randomString}.webp`;
+    console.log('🏷️ Generated filename:', fileName);
 
     // Create AWS signature for R2
     const region = 'auto';
     const service = 's3';
     const host = `${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
     const url = `https://${host}/${R2_BUCKET_NAME}/${fileName}`;
+    console.log('🌐 Upload URL:', url);
 
     const now = new Date();
     const dateStamp = now.toISOString().slice(0, 10).replace(/-/g, '');
     const amzDate = now.toISOString().replace(/[:\-]|\.\d{3}/g, '');
+
+    console.log('🕐 Date info:', { dateStamp, amzDate });
 
     // Create canonical request
     const canonicalUri = `/${R2_BUCKET_NAME}/${fileName}`;
@@ -50,19 +80,28 @@ serve(async (req) => {
     const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
     const canonicalRequest = `PUT\n${canonicalUri}\n\n${canonicalHeaders}\n${signedHeaders}\nUNSIGNED-PAYLOAD`;
 
+    console.log('📋 Canonical request created');
+
     // Create string to sign
     const algorithm = 'AWS4-HMAC-SHA256';
     const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
     const stringToSign = `${algorithm}\n${amzDate}\n${credentialScope}\n${await sha256(canonicalRequest)}`;
 
+    console.log('🔐 String to sign created');
+
     // Calculate signature
     const signingKey = await getSignatureKey(R2_SECRET_ACCESS_KEY, dateStamp, region, service);
     const signature = await hmacSha256(signingKey, stringToSign);
 
+    console.log('✍️ Signature calculated');
+
     // Create authorization header
     const authorization = `${algorithm} Credential=${R2_ACCESS_KEY_ID}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
 
+    console.log('🔑 Authorization header created');
+
     // Upload to R2
+    console.log('📤 Starting upload to R2...');
     const uploadResponse = await fetch(url, {
       method: 'PUT',
       headers: {
@@ -74,12 +113,22 @@ serve(async (req) => {
       body: file,
     });
 
+    console.log('📊 Upload response status:', uploadResponse.status);
+    console.log('📊 Upload response headers:', Object.fromEntries(uploadResponse.headers.entries()));
+
     if (!uploadResponse.ok) {
-      throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText}`);
+      const responseText = await uploadResponse.text();
+      console.error('❌ Upload failed:', {
+        status: uploadResponse.status,
+        statusText: uploadResponse.statusText,
+        responseText
+      });
+      throw new Error(`Upload failed: ${uploadResponse.status} ${uploadResponse.statusText} - ${responseText}`);
     }
 
     // Return the public URL
     const publicUrl = `https://pub-${R2_ACCOUNT_ID}.r2.dev/${fileName}`;
+    console.log('✅ Upload successful! Public URL:', publicUrl);
 
     return new Response(
       JSON.stringify({ 
@@ -92,9 +141,12 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error uploading to R2:', error);
+    console.error('💥 Error uploading to R2:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: 'Check the function logs for more information'
+      }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
