@@ -101,11 +101,9 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
       console.log('Uploading to Cloudflare R2...');
 
       // Llamar a la función Edge para subir a Cloudflare R2
+      // NO especificar Content-Type, dejar que el navegador lo maneje automáticamente
       const { data, error } = await supabase.functions.invoke('upload-to-r2', {
         body: formData,
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
       });
 
       if (error) {
