@@ -7,12 +7,20 @@ import CategoriesManager from '@/components/admin/CategoriesManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CouponsManager from '@/components/admin/CouponsManager';
 import StoreConfigManager from '@/components/admin/StoreConfigManager';
-import { Package, Tag, ShoppingCart, Percent, Settings } from 'lucide-react';
+import { SalesStats } from '@/components/admin/SalesStats';
+import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3 } from 'lucide-react';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
 
   const tabs = [
+    {
+      id: 'stats',
+      label: 'Estadísticas',
+      icon: BarChart3,
+      component: SalesStats,
+      description: 'Resumen de ventas y productos más vendidos'
+    },
     {
       id: 'products',
       label: 'Productos',
@@ -21,18 +29,18 @@ const Admin = () => {
       description: 'Gestiona tu catálogo de productos'
     },
     {
-      id: 'categories',
-      label: 'Categorías',
-      icon: Tag,
-      component: CategoriesManager,
-      description: 'Organiza tus productos por categorías'
-    },
-    {
       id: 'orders',
       label: 'Pedidos',
       icon: ShoppingCart,
       component: OrdersManager,
       description: 'Revisa y gestiona los pedidos'
+    },
+    {
+      id: 'categories',
+      label: 'Categorías',
+      icon: Tag,
+      component: CategoriesManager,
+      description: 'Organiza tus productos por categorías'
     },
     {
       id: 'coupons',
@@ -51,48 +59,33 @@ const Admin = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container mx-auto p-4 max-w-7xl">
-        <div className="mb-6">
-          <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">
-            Panel de Administración
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-3 sm:p-4 max-w-7xl">
+        <div className="mb-4 sm:mb-6">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">
+            Panel Admin
           </h1>
-          <p className="text-gray-600">
+          <p className="text-sm text-muted-foreground hidden sm:block">
             Gestiona tu tienda desde este panel de control
           </p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Mobile tabs - dropdown style */}
-          <div className="block sm:hidden">
-            <Card>
-              <CardContent className="p-3">
-                <TabsList className="grid w-full grid-cols-2 gap-1 bg-transparent p-0">
-                  {tabs.slice(0, 2).map((tab) => {
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-6">
+          {/* Mobile tabs - compact grid */}
+          <div className="block md:hidden">
+            <Card className="border-0 shadow-sm">
+              <CardContent className="p-2">
+                <TabsList className="grid w-full grid-cols-3 gap-1 bg-transparent p-0 h-auto">
+                  {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
                       <TabsTrigger
                         key={tab.id}
                         value={tab.id}
-                        className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700"
+                        className="flex flex-col items-center gap-1 p-2 text-xs h-auto data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                       >
                         <Icon className="h-4 w-4" />
-                        <span>{tab.label}</span>
-                      </TabsTrigger>
-                    );
-                  })}
-                </TabsList>
-                <TabsList className="grid w-full grid-cols-3 gap-1 bg-transparent p-0 mt-2">
-                  {tabs.slice(2).map((tab) => {
-                    const Icon = tab.icon;
-                    return (
-                      <TabsTrigger
-                        key={tab.id}
-                        value={tab.id}
-                        className="flex flex-col items-center gap-1 p-3 text-xs data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700"
-                      >
-                        <Icon className="h-4 w-4" />
-                        <span>{tab.label}</span>
+                        <span className="text-[10px] leading-tight">{tab.label}</span>
                       </TabsTrigger>
                     );
                   })}
@@ -102,18 +95,18 @@ const Admin = () => {
           </div>
 
           {/* Desktop tabs */}
-          <div className="hidden sm:block">
-            <TabsList className="grid w-full grid-cols-5 bg-white border shadow-sm">
+          <div className="hidden md:block">
+            <TabsList className="grid w-full grid-cols-6 bg-card border shadow-sm">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
                   <TabsTrigger
                     key={tab.id}
                     value={tab.id}
-                    className="flex items-center gap-2 py-3 data-[state=active]:bg-pink-100 data-[state=active]:text-pink-700"
+                    className="flex items-center gap-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                   >
                     <Icon className="h-4 w-4" />
-                    <span className="hidden md:inline">{tab.label}</span>
+                    <span>{tab.label}</span>
                   </TabsTrigger>
                 );
               })}
@@ -124,18 +117,18 @@ const Admin = () => {
           {tabs.map((tab) => {
             const Component = tab.component;
             return (
-              <TabsContent key={tab.id} value={tab.id} className="space-y-6">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center gap-2 text-lg md:text-xl">
-                      <tab.icon className="h-5 w-5 text-pink-500" />
+              <TabsContent key={tab.id} value={tab.id} className="space-y-3 sm:space-y-6 mt-3 sm:mt-6">
+                <Card className="border-0 shadow-sm">
+                  <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6">
+                    <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                      <tab.icon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
                       {tab.label}
                     </CardTitle>
-                    <CardDescription className="text-sm">
+                    <CardDescription className="text-xs sm:text-sm hidden sm:block">
                       {tab.description}
                     </CardDescription>
                   </CardHeader>
-                  <CardContent>
+                  <CardContent className="px-3 sm:px-6">
                     <Component />
                   </CardContent>
                 </Card>

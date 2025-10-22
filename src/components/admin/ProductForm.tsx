@@ -37,7 +37,8 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
     image_url: editingProduct?.image_url || '',
     show_dozen_message: editingProduct?.show_dozen_message || false,
     is_active: editingProduct?.is_active ?? true,
-    has_wholesale: editingProduct ? editingProduct.wholesale_price !== editingProduct.price : false
+    has_wholesale: editingProduct ? editingProduct.wholesale_price !== editingProduct.price : false,
+    stock: editingProduct?.stock?.toString() || '0'
   });
 
   const [newCategoryName, setNewCategoryName] = useState('');
@@ -55,7 +56,8 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       image_url: '',
       show_dozen_message: false,
       is_active: true,
-      has_wholesale: false
+      has_wholesale: false,
+      stock: '0'
     });
     setNewCategoryName('');
     setShowNewCategoryForm(false);
@@ -138,7 +140,8 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       image_url: formData.image_url || null,
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
-      slug: '', // El trigger de la base de datos generará el slug automáticamente
+      stock: parseInt(formData.stock) || 0,
+      slug: '',
       updated_at: new Date().toISOString()
     };
 
@@ -284,7 +287,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <Label htmlFor="price">Precio *</Label>
               <Input
@@ -294,6 +297,17 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
                 value={formData.price}
                 onChange={(e) => setFormData({ ...formData, price: e.target.value })}
                 required
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="stock">Stock/Inventario</Label>
+              <Input
+                id="stock"
+                type="number"
+                min="0"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
               />
             </div>
           </div>

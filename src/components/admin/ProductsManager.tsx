@@ -127,6 +127,12 @@ const ProductsManager = () => {
                       <span>Por mayor:</span>
                       <span className="font-medium">S/ {product.wholesale_price.toFixed(2)}</span>
                     </div>
+                    <div className="flex justify-between items-center text-xs">
+                      <span>Stock:</span>
+                      <span className={`font-medium ${product.stock < 5 ? 'text-red-500' : 'text-green-600'}`}>
+                        {product.stock || 0}
+                      </span>
+                    </div>
                   </div>
                   <div className="mt-2 flex items-center justify-between">
                     <span className={`px-2 py-1 rounded-full text-xs ${
@@ -178,6 +184,7 @@ const ProductsManager = () => {
               <TableHead>Marca</TableHead>
               <TableHead>Precio</TableHead>
               <TableHead>Precio Mayor</TableHead>
+              <TableHead>Stock</TableHead>
               <TableHead>Estado</TableHead>
               <TableHead>Acciones</TableHead>
             </TableRow>
@@ -199,6 +206,11 @@ const ProductsManager = () => {
                 <TableCell className="max-w-[100px] truncate">{product.brand || '-'}</TableCell>
                 <TableCell>S/ {product.price.toFixed(2)}</TableCell>
                 <TableCell>S/ {product.wholesale_price.toFixed(2)}</TableCell>
+                <TableCell>
+                  <span className={`font-semibold ${product.stock < 5 ? 'text-red-500' : 'text-green-600'}`}>
+                    {product.stock || 0}
+                  </span>
+                </TableCell>
                 <TableCell>
                   <span className={`px-2 py-1 rounded-full text-xs ${
                     product.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'

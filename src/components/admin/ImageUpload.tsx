@@ -24,7 +24,6 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
       const img = new Image();
 
       img.onload = () => {
-        // Calcular nuevas dimensiones manteniendo aspect ratio
         const maxWidth = 800;
         const maxHeight = 800;
         let { width, height } = img;
@@ -43,11 +42,8 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
 
         canvas.width = width;
         canvas.height = height;
-
-        // Dibujar imagen redimensionada
         ctx?.drawImage(img, 0, 0, width, height);
 
-        // Convertir a WebP con compresión
         canvas.toBlob(
           (blob) => {
             if (blob) {
@@ -57,7 +53,7 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
             }
           },
           'image/webp',
-          0.8 // Calidad del 80%
+          0.8
         );
       };
 
@@ -69,78 +65,58 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
   const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       setUploading(true);
-      console.log('🚀 Starting image upload and compression...');
       
       if (!event.target.files || event.target.files.length === 0) {
         throw new Error('Debes seleccionar una imagen para subir.');
       }
 
       const file = event.target.files[0];
-      console.log('📁 Original file:', {
-        name: file.name,
-        size: file.size,
-        type: file.type
-      });
       
-      // Verificar que sea una imagen
       if (!file.type.startsWith('image/')) {
         throw new Error('El archivo debe ser una imagen.');
       }
 
-      // Verificar tamaño original (máximo 10MB antes de compresión)
       if (file.size > 10 * 1024 * 1024) {
         throw new Error('La imagen debe ser menor a 10MB.');
       }
 
       // Comprimir y convertir a WebP
-      console.log('🔄 Compressing and converting to WebP...');
       const compressedBlob = await compressAndConvertToWebP(file);
-      console.log('✅ Compressed file size:', compressedBlob.size, 'bytes');
-      console.log('📊 Compression ratio:', ((file.size - compressedBlob.size) / file.size * 100).toFixed(1) + '%');
-
-      // Crear FormData para enviar a la función Edge
-      const formData = new FormData();
-      formData.append('file', compressedBlob, 'image.webp');
-
-      console.log('📤 Uploading to Cloudflare R2 via Edge Function...');
-      console.log('📦 FormData contents:', Array.from(formData.keys()));
-
-      // Llamar a la función Edge para subir a Cloudflare R2
-      const { data, error } = await supabase.functions.invoke('upload-to-r2', {
-        body: formData,
-      });
-
-      if (error) {
-        console.error('❌ Supabase Functions error:', error);
-        console.error('❌ Error details:', JSON.stringify(error, null, 2));
-        throw new Error(`Edge Function error: ${error.message || 'Unknown error'}`);
-      }
-
-      if (!data) {
-        console.error('❌ No data returned from Edge Function');
-        throw new Error('No data returned from Edge Function');
-      }
-
-      console.log('✅ Upload successful:', data);
-
-      if (!data.url) {
-        console.error('❌ No URL in response:', data);
-        throw new Error('No URL returned from upload');
-      }
-
-      onChange(data.url);
-      
       const compressionPercentage = ((file.size - compressedBlob.size) / file.size * 100).toFixed(1);
+
+      // Generar nombre único para el archivo
+      const fileExt = 'webp';
+      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      // Subir a Supabase Storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, compressedBlob, {
+          contentType: 'image/webp',
+          cacheControl: '3600',
+          upsert: false
+        });
+
+      if (uploadError) {
+        throw uploadError;
+      }
+
+      // Obtener URL pública
+      const { data: { publicUrl } } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      onChange(publicUrl);
+      
       toast({
-        title: "✅ Imagen subida a Cloudflare R2",
-        description: `Imagen optimizada ${compressionPercentage}% y almacenada en CDN.`,
+        title: "✅ Imagen subida",
+        description: `Imagen optimizada ${compressionPercentage}% en formato WebP.`,
       });
 
-      // Limpiar el input
       event.target.value = '';
     } catch (error: any) {
-      console.error('💥 Error uploading image:', error);
-      console.error('💥 Error stack:', error.stack);
+      console.error('Error uploading image:', error);
       toast({
         title: "❌ Error al subir imagen",
         description: error.message || "Hubo un error al subir la imagen.",
@@ -205,8 +181,8 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
               onChange={uploadImage}
               disabled={uploading}
             />
-            <p className="text-sm text-gray-500 mt-2">
-              PNG, JPG, GIF hasta 10MB (se subirá a Cloudflare R2 CDN)
+            <p className="text-sm text-muted-foreground mt-2">
+              PNG, JPG, GIF hasta 10MB (se convertirá a WebP)
             </p>
           </div>
         </div>

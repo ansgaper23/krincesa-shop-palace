@@ -26,7 +26,7 @@ export const useProducts = () => {
       }
       
       console.log('Products fetched:', data?.length);
-      return data as (Product & { categories: Category | null })[];
+      return data as any;
     },
     staleTime: 0,
     gcTime: 0,
@@ -55,7 +55,7 @@ export const useAllProducts = () => {
       }
       
       console.log('All products fetched:', data?.length);
-      return data as (Product & { categories: Category | null })[];
+      return data as any;
     },
     staleTime: 0,
     gcTime: 0,
@@ -86,7 +86,7 @@ export const useProduct = (id: string) => {
       }
       
       console.log('Product fetched:', data?.name);
-      return data as Product & { categories: Category | null };
+      return data as any;
     },
     staleTime: 0,
     gcTime: 0,
