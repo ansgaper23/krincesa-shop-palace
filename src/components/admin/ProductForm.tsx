@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -43,6 +43,27 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
 
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
+
+  useEffect(() => {
+    if (editingProduct && isOpen) {
+      setFormData({
+        name: editingProduct.name || '',
+        description: editingProduct.description || '',
+        brand: editingProduct.brand || '',
+        category_id: editingProduct.category_id || '',
+        price: editingProduct.price?.toString() || '',
+        wholesale_price: editingProduct.wholesale_price?.toString() || '',
+        min_wholesale_quantity: editingProduct.min_wholesale_quantity?.toString() || '3',
+        image_url: editingProduct.image_url || '',
+        show_dozen_message: editingProduct.show_dozen_message || false,
+        is_active: editingProduct.is_active ?? true,
+        has_wholesale: editingProduct.wholesale_price !== editingProduct.price,
+        stock: editingProduct.stock?.toString() || '0'
+      });
+    } else if (!editingProduct && isOpen) {
+      resetForm();
+    }
+  }, [editingProduct, isOpen]);
 
   const resetForm = () => {
     setFormData({
