@@ -43,6 +43,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
 
   const [newCategoryName, setNewCategoryName] = useState('');
   const [showNewCategoryForm, setShowNewCategoryForm] = useState(false);
+  const [showStockField, setShowStockField] = useState(!!editingProduct?.stock);
 
   useEffect(() => {
     if (editingProduct && isOpen) {
@@ -60,8 +61,10 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
         has_wholesale: editingProduct.wholesale_price !== editingProduct.price,
         stock: editingProduct.stock?.toString() || '0'
       });
+      setShowStockField(!!editingProduct.stock);
     } else if (!editingProduct && isOpen) {
       resetForm();
+      setShowStockField(false);
     }
   }, [editingProduct, isOpen]);
 
@@ -308,19 +311,28 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
             </Select>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="price">Precio *</Label>
-              <Input
-                id="price"
-                type="number"
-                step="0.01"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                required
-              />
-            </div>
-            
+          <div>
+            <Label htmlFor="price">Precio *</Label>
+            <Input
+              id="price"
+              type="number"
+              step="0.01"
+              value={formData.price}
+              onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="flex items-center space-x-2 mb-2">
+            <Switch
+              id="track_stock"
+              checked={showStockField}
+              onCheckedChange={setShowStockField}
+            />
+            <Label htmlFor="track_stock">Controlar inventario</Label>
+          </div>
+
+          {showStockField && (
             <div>
               <Label htmlFor="stock">Stock/Inventario</Label>
               <Input
@@ -331,7 +343,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
                 onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
               />
             </div>
-          </div>
+          )}
 
           <div className="flex items-center space-x-2 mb-4">
             <Switch

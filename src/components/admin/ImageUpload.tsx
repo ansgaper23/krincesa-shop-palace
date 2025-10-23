@@ -187,16 +187,6 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
           </div>
         </div>
       )}
-      
-      <div className="space-y-2">
-        <Label htmlFor="image-url">O pegar URL de imagen</Label>
-        <Input
-          id="image-url"
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          placeholder="https://ejemplo.com/imagen.jpg"
-        />
-      </div>
     </div>
   );
 };
