@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useCategories, useProducts, useStoreConfig } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -13,6 +13,8 @@ const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
+  const [hideHeader, setHideHeader] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
   
   const { data: categories } = useCategories();
   const { data: products } = useProducts();
@@ -25,6 +27,23 @@ const Index = () => {
     return matchesCategory && matchesSearch && product.is_active;
   }) || [];
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        setHideHeader(true);
+      } else {
+        setHideHeader(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
+
   const handleWhatsAppHelp = () => {
     const whatsappNumber = storeConfig?.whatsapp_number || "+51999999999";
     const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
@@ -35,7 +54,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Navigation Bar - Mobile Optimized */}
-      <header className="bg-background border-b sticky top-0 z-40">
+      <header className={`bg-background border-b sticky top-0 z-40 transition-transform duration-300 ${hideHeader ? '-translate-y-full' : 'translate-y-0'}`}>
         <div className="container mx-auto px-4 py-3">
           {/* Top Row: Search and WhatsApp */}
           <div className="flex items-center justify-between gap-3 mb-4">
@@ -99,11 +118,8 @@ const Index = () => {
       </header>
 
       {/* Horizontal Scrollable Categories */}
-      <div className="bg-background border-b py-4 sticky top-[200px] z-30">
+      <div className="bg-background border-b py-4 sticky top-0 z-30">
         <div className="container mx-auto px-4">
-          <h2 className="text-lg font-semibold mb-3 text-pink-600">
-            Categorías principales
-          </h2>
           <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex gap-3 pb-2">
               <Button
