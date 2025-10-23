@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { ShoppingCart, X, Minus, Plus, Trash2 } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
@@ -8,6 +9,15 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export const CartDrawer = () => {
   const { items, updateQuantity, removeFromCart, getTotal, getItemCount } = useCart();
+  const [isOpen, setIsOpen] = useState(false);
+  const itemCount = getItemCount();
+
+  // Auto-open when items are added
+  useEffect(() => {
+    if (itemCount > 0 && items.length > 0) {
+      setIsOpen(true);
+    }
+  }, [itemCount]);
 
   const calculateItemPrice = (item: typeof items[0]) => {
     const isWholesale = item.quantity >= item.product.min_wholesale_quantity;
@@ -15,17 +25,15 @@ export const CartDrawer = () => {
     return unitPrice * item.quantity;
   };
 
-  const itemCount = getItemCount();
-
   return (
-    <Sheet>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetTrigger asChild>
         <Button
-          className="fixed top-4 right-4 z-50 rounded-full shadow-lg"
+          className="fixed bottom-4 right-4 z-50 rounded-full shadow-lg w-14 h-14 p-0"
           size="lg"
           variant="default"
         >
-          <ShoppingCart className="h-5 w-5" />
+          <ShoppingCart className="h-6 w-6" />
           {itemCount > 0 && (
             <Badge className="absolute -top-2 -right-2 rounded-full px-2 py-1 text-xs">
               {itemCount}
@@ -34,7 +42,7 @@ export const CartDrawer = () => {
         </Button>
       </SheetTrigger>
       
-      <SheetContent className="w-full sm:max-w-lg flex flex-col">
+      <SheetContent className="w-full sm:max-w-md flex flex-col" side="right">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="h-5 w-5" />
