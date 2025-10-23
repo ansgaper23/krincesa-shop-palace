@@ -5,13 +5,14 @@ import { ProductCard } from "@/components/ProductCard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { Button } from "@/components/ui/button";
-import { MessageCircle, Menu, Search, User } from "lucide-react";
+import { MessageCircle, Search } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
 
 const Index = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [showSearch, setShowSearch] = useState(false);
   
   const { data: categories } = useCategories();
   const { data: products } = useProducts();
@@ -36,32 +37,38 @@ const Index = () => {
       {/* Top Navigation Bar - Mobile Optimized */}
       <header className="bg-background border-b sticky top-0 z-40">
         <div className="container mx-auto px-4 py-3">
-          {/* Top Row: Menu, Search, Icons */}
+          {/* Top Row: Search and WhatsApp */}
           <div className="flex items-center justify-between gap-3 mb-4">
-            <Button variant="ghost" size="icon">
-              <Menu className="h-6 w-6" />
-            </Button>
-            
-            <Button variant="ghost" size="icon">
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={() => setShowSearch(!showSearch)}
+            >
               <Search className="h-6 w-6" />
             </Button>
 
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="icon">
-                <MessageCircle className="h-6 w-6" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon"
-                onClick={handleWhatsAppHelp}
-              >
-                <MessageCircle className="h-6 w-6" />
-              </Button>
-              <Button variant="ghost" size="icon">
-                <User className="h-6 w-6" />
-              </Button>
-            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleWhatsAppHelp}
+              className="text-green-600 hover:text-green-700"
+            >
+              <MessageCircle className="h-6 w-6" />
+            </Button>
           </div>
+
+          {/* Search Bar */}
+          {showSearch && (
+            <div className="mb-4">
+              <Input
+                type="text"
+                placeholder="Buscar productos..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full"
+              />
+            </div>
+          )}
 
           {/* Logo and Store Info */}
           <div className="text-center mb-4">
