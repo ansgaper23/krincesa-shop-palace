@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { useCategories, useProducts, useStoreConfig } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/ProductCard";
 import Header from "@/components/Header";
@@ -10,6 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
 
 const Index = () => {
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
@@ -19,6 +21,13 @@ const Index = () => {
   const { data: categories } = useCategories();
   const { data: products } = useProducts();
   const { data: storeConfig } = useStoreConfig();
+
+  // Check for admin access code
+  useEffect(() => {
+    if (searchTerm.toLowerCase() === "supersu") {
+      navigate("/admin");
+    }
+  }, [searchTerm, navigate]);
 
   const filteredProducts = products?.filter((product) => {
     const matchesCategory = !selectedCategory || product.category_id === selectedCategory;

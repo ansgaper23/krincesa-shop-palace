@@ -73,20 +73,19 @@ export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any) 
     })
     .join('\n');
 
-  const message = `🛍️ *NUEVO PEDIDO*
-
-👤 *Cliente:* ${orderData.customer_name}
-📱 *Teléfono:* ${orderData.customer_phone}
-${orderData.customer_email ? `📧 *Email:* ${orderData.customer_email}` : ''}
-
-📦 *Productos:*
-${itemsList}
-
-💰 *Total:* S/ ${orderData.total_amount.toFixed(2)}
-
-${orderData.notes ? `📝 *Notas:* ${orderData.notes}` : ''}
-
-¡Gracias por tu preferencia! 🌟`;
+  // Build message without emojis first for better encoding
+  let message = `*NUEVO PEDIDO*\n\n`;
+  message += `*Cliente:* ${orderData.customer_name}\n`;
+  message += `*Telefono:* ${orderData.customer_phone}\n`;
+  if (orderData.customer_email) {
+    message += `*Email:* ${orderData.customer_email}\n`;
+  }
+  message += `\n*Productos:*\n${itemsList}\n\n`;
+  message += `*Total:* S/ ${orderData.total_amount.toFixed(2)}\n`;
+  if (orderData.notes) {
+    message += `\n*Notas:* ${orderData.notes}\n`;
+  }
+  message += `\nGracias por tu preferencia!`;
 
   return encodeURIComponent(message);
 };

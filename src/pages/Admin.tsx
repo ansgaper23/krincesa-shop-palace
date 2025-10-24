@@ -1,14 +1,16 @@
 
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import ProductsManager from '@/components/admin/ProductsManager';
 import CategoriesManager from '@/components/admin/CategoriesManager';
 import OrdersManager from '@/components/admin/OrdersManager';
 import CouponsManager from '@/components/admin/CouponsManager';
 import StoreConfigManager from '@/components/admin/StoreConfigManager';
 import { SalesStats } from '@/components/admin/SalesStats';
-import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3 } from 'lucide-react';
+import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft } from 'lucide-react';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
@@ -62,9 +64,18 @@ const Admin = () => {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-3 sm:p-4 max-w-7xl">
         <div className="mb-4 sm:mb-6">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1">
-            Panel Admin
-          </h1>
+          <div className="flex items-center justify-between mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">
+              Panel Admin
+            </h1>
+            <Link to="/">
+              <Button variant="outline" size="sm" className="gap-2">
+                <ArrowLeft className="h-4 w-4" />
+                <span className="hidden sm:inline">Salir del panel</span>
+                <span className="sm:hidden">Salir</span>
+              </Button>
+            </Link>
+          </div>
           <p className="text-sm text-muted-foreground hidden sm:block">
             Gestiona tu tienda desde este panel de control
           </p>
