@@ -138,11 +138,20 @@ export const CartDrawer = () => {
                 <span className="font-bold text-xl">S/ {getTotal().toFixed(2)}</span>
               </div>
 
-              <Link to="/checkout" className="block">
-                <Button className="w-full" size="lg">
-                  Finalizar pedido
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1" 
+                  onClick={() => setIsOpen(false)}
+                >
+                  Continuar comprando
                 </Button>
-              </Link>
+                <Link to="/checkout" className="flex-1">
+                  <Button className="w-full" size="lg">
+                    Finalizar pedido
+                  </Button>
+                </Link>
+              </div>
             </div>
           </>
         )}

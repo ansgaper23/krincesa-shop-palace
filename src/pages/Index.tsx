@@ -31,7 +31,8 @@ const Index = () => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      // Solo mostrar header cuando estamos completamente en el tope
+      if (currentScrollY > 50) {
         setHideHeader(true);
       } else {
         setHideHeader(false);
@@ -89,31 +90,33 @@ const Index = () => {
             </div>
           )}
 
-          {/* Logo and Store Info */}
-          <div className="text-center mb-4">
-            {storeConfig?.logo_url ? (
-              <img
-                src={storeConfig.logo_url}
-                alt={storeConfig.store_name}
-                className="h-24 w-24 mx-auto rounded-full object-cover mb-3"
-              />
-            ) : (
-              <div className="h-24 w-24 mx-auto rounded-full bg-pink-500 flex items-center justify-center mb-3">
-                <span className="text-white text-3xl font-bold">
-                  {storeConfig?.store_name?.charAt(0) || 'K'}
-                </span>
-              </div>
-            )}
-            <h1 className="text-xl font-bold mb-1">
-              {storeConfig?.store_name || 'Krincesa Distribuidora'}
-            </h1>
-            <p className="text-sm text-muted-foreground px-4">
-              {storeConfig?.site_description || 'Descubre nuestra amplia selección de productos de calidad'}
-            </p>
-            <p className="text-sm text-muted-foreground mt-1">
-              📍 Lima, Cañete
-            </p>
-          </div>
+          {/* Logo and Store Info - Ocultar cuando hay búsqueda activa */}
+          {!showSearch && (
+            <div className="text-center mb-4">
+              {storeConfig?.logo_url ? (
+                <img
+                  src={storeConfig.logo_url}
+                  alt={storeConfig.store_name}
+                  className="h-24 w-24 mx-auto rounded-full object-cover mb-3"
+                />
+              ) : (
+                <div className="h-24 w-24 mx-auto rounded-full bg-pink-500 flex items-center justify-center mb-3">
+                  <span className="text-white text-3xl font-bold">
+                    {storeConfig?.store_name?.charAt(0) || 'K'}
+                  </span>
+                </div>
+              )}
+              <h1 className="text-xl font-bold mb-1">
+                {storeConfig?.store_name || 'Krincesa Distribuidora'}
+              </h1>
+              <p className="text-sm text-muted-foreground px-4">
+                {storeConfig?.site_description || 'Descubre nuestra amplia selección de productos de calidad'}
+              </p>
+              <p className="text-sm text-muted-foreground mt-1">
+                📍 Lima, Cañete
+              </p>
+            </div>
+          )}
         </div>
       </header>
 
