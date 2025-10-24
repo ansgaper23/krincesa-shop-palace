@@ -146,7 +146,7 @@ export const CartDrawer = () => {
                 >
                   Continuar comprando
                 </Button>
-                <Link to="/checkout" className="flex-1">
+                <Link to="/checkout" className="flex-1" onClick={() => setIsOpen(false)}>
                   <Button className="w-full" size="lg">
                     Finalizar pedido
                   </Button>
