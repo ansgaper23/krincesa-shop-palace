@@ -24,7 +24,8 @@ const StoreConfigManager = () => {
     tiktok_url: '',
     terms_and_conditions: '',
     privacy_policy: '',
-    site_description: ''
+    site_description: '',
+    whatsapp_message_template: ''
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,7 +43,8 @@ const StoreConfigManager = () => {
         tiktok_url: storeConfig.tiktok_url || '',
         terms_and_conditions: storeConfig.terms_and_conditions || '',
         privacy_policy: storeConfig.privacy_policy || '',
-        site_description: storeConfig.site_description || ''
+        site_description: storeConfig.site_description || '',
+        whatsapp_message_template: storeConfig.whatsapp_message_template || ''
       });
     }
   }, [storeConfig]);
@@ -74,6 +76,7 @@ const StoreConfigManager = () => {
         terms_and_conditions: formData.terms_and_conditions.trim() || null,
         privacy_policy: formData.privacy_policy.trim() || null,
         site_description: formData.site_description.trim() || null,
+        whatsapp_message_template: formData.whatsapp_message_template.trim() || null,
         updated_at: new Date().toISOString()
       };
 
@@ -235,6 +238,24 @@ const StoreConfigManager = () => {
               placeholder="https://tiktok.com/@krincesa"
             />
           </div>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-800">Mensajes de WhatsApp</h3>
+        
+        <div>
+          <Label htmlFor="whatsapp_message_template">Plantilla de Mensaje de Pedido</Label>
+          <Textarea
+            id="whatsapp_message_template"
+            value={formData.whatsapp_message_template}
+            onChange={(e) => setFormData({ ...formData, whatsapp_message_template: e.target.value })}
+            rows={10}
+            placeholder="NUEVO PEDIDO&#10;&#10;Cliente: {{customer_name}}&#10;Telefono: {{customer_phone}}&#10;&#10;Productos:&#10;{{products_list}}&#10;&#10;Total: S/ {{total_amount}}&#10;&#10;Notas: {{notes}}&#10;&#10;Gracias por tu preferencia!"
+          />
+          <p className="text-sm text-muted-foreground mt-2">
+            Variables disponibles: {"{"}{"{"} customer_name {"}"}{"}"}, {"{"}{"{"} customer_phone {"}"}{"}"}, {"{"}{"{"} products_list {"}"}{"}"}, {"{"}{"{"} total_amount {"}"}{"}"}, {"{"}{"{"} notes {"}"}{"}"}
+          </p>
         </div>
       </div>
 

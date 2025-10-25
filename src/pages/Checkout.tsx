@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -10,6 +10,7 @@ import { useStoreConfig } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/use-toast";
 import { saveOrderToDatabase, generateWhatsAppMessage, sendWhatsAppOrder } from "@/utils/orderUtils";
 import Header from "@/components/Header";
+import { ArrowLeft } from "lucide-react";
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -20,7 +21,6 @@ const Checkout = () => {
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
-    email: "",
     notes: ""
   });
   
@@ -58,7 +58,7 @@ const Checkout = () => {
       const orderData = {
         customer_name: formData.name.trim(),
         customer_phone: formData.phone.trim(),
-        customer_email: formData.email.trim() || undefined,
+        customer_email: undefined,
         total_amount: getTotal(),
         notes: formData.notes.trim() || undefined,
         items: items
@@ -122,6 +122,13 @@ const Checkout = () => {
       
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-2xl mx-auto">
+          <Link 
+            to="/" 
+            className="inline-flex items-center gap-2 text-primary hover:text-primary/80 mb-4 transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Volver a la tienda
+          </Link>
           <h1 className="text-3xl font-bold text-gray-800 mb-8 text-center">Finalizar Pedido</h1>
           
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -150,17 +157,6 @@ const Checkout = () => {
                     onChange={(e) => handleInputChange("phone", e.target.value)}
                     placeholder="+51999999999"
                     required
-                  />
-                </div>
-                
-                <div>
-                  <Label htmlFor="email">Email (opcional)</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    placeholder="tu@email.com"
                   />
                 </div>
                 

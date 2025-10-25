@@ -63,30 +63,28 @@ export const saveOrderToDatabase = async (orderData: OrderData) => {
   }
 };
 
-export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any) => {
-  const itemsList = orderData.items
-    .map(item => {
-      const price = item.quantity >= item.product.min_wholesale_quantity 
-        ? item.product.wholesale_price 
-        : item.product.price;
-      return `• ${item.product.name} - Cantidad: ${item.quantity} - S/ ${(price * item.quantity).toFixed(2)}`;
-    })
-    .join('\n');
-
-  // Build message without emojis first for better encoding
-  let message = `*NUEVO PEDIDO*\n\n`;
-  message += `*Cliente:* ${orderData.customer_name}\n`;
-  message += `*Telefono:* ${orderData.customer_phone}\n`;
-  if (orderData.customer_email) {
-    message += `*Email:* ${orderData.customer_email}\n`;
-  }
-  message += `\n*Productos:*\n${itemsList}\n\n`;
-  message += `*Total:* S/ ${orderData.total_amount.toFixed(2)}\n`;
-  if (orderData.notes) {
-    message += `\n*Notas:* ${orderData.notes}\n`;
-  }
-  message += `\nGracias por tu preferencia!`;
-
+export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any): string => {
+  let template = storeConfig?.whatsapp_message_template || 
+    `NUEVO PEDIDO\n\nCliente: {{customer_name}}\nTelefono: {{customer_phone}}\n\nProductos:\n{{products_list}}\n\nTotal: S/ {{total_amount}}\n\nNotas: {{notes}}\n\nGracias por tu preferencia!`;
+  
+  // Build products list
+  let productsList = '';
+  orderData.items.forEach(item => {
+    const price = item.quantity >= item.product.min_wholesale_quantity 
+      ? item.product.wholesale_price 
+      : item.product.price;
+    productsList += `- ${item.product.name} - Cantidad: ${item.quantity} - S/ ${(price * item.quantity).toFixed(2)}\n`;
+  });
+  
+  // Replace template variables
+  let message = template
+    .replace(/\{\{customer_name\}\}/g, orderData.customer_name)
+    .replace(/\{\{customer_phone\}\}/g, orderData.customer_phone)
+    .replace(/\{\{customer_email\}\}/g, orderData.customer_email || '')
+    .replace(/\{\{products_list\}\}/g, productsList.trim())
+    .replace(/\{\{total_amount\}\}/g, orderData.total_amount.toFixed(2))
+    .replace(/\{\{notes\}\}/g, orderData.notes || '');
+  
   return encodeURIComponent(message);
 };
 

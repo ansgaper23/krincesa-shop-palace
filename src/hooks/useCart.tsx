@@ -40,8 +40,9 @@ export const CartProvider = ({ children }: { children: ReactNode }) => {
     });
 
     toast({
-      title: "Producto añadido al carrito",
+      title: "Añadido",
       description: `${product.name} x${quantity}`,
+      duration: 1500,
     });
   };
 
