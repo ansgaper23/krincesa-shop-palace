@@ -1,4 +1,5 @@
-
+// 1. Asegúrate de que 'useEffect' esté importado aquí arriba
+import React, { useEffect } from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,52 +14,59 @@ import Checkout from "./pages/Checkout";
 import ThankYou from "./pages/ThankYou";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
-import React, { useEffect } from 'react';
+// (Ya no hay código duplicado aquí)
 
-function App() {
-
-  useEffect(() => {
-    // Se ejecuta después de que el componente se renderiza
-    const badge = document.getElementById('lovable-badge');
-    
-    if (badge) {
-      // Si encuentra el logo, lo oculta
-      badge.style.display = 'none';
-    }
-  }, []); // El array vacío [] hace que este efecto se ejecute solo una vez
-
-  // ...resto de tu componente
-  return (
-    <div className="App">
-      {/* ...el contenido de tu app */}
-    </div>
-  );
-}
-
-export default App;
 const queryClient = new QueryClient();
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <CartProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <CartDrawer />
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/product/:id" element={<ProductDetail />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/checkout" element={<Checkout />} />
-            <Route path="/thank-you" element={<ThankYou />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </CartProvider>
-  </QueryClientProvider>
-);
+// 2. Cambiamos tu 'const App = () => (' por 'const App = () => {'
+//    Esto nos permite añadir lógica ANTES del 'return'.
+const App = () => {
+
+  // 3. PEGAMOS EL CÓDIGO 'useEffect' AQUÍ
+  useEffect(() => {
+    // Intenta ocultar el logo de inmediato
+    const badge = document.getElementById('lovable-badge');
+    if (badge) {
+      badge.style.display = 'none';
+    }
+
+    // Si el logo tarda en aparecer, lo volvemos a intentar
+    // después de un segundo. Es más robusto.
+    const timer = setTimeout(() => {
+      const badgeAfterTimer = document.getElementById('lovable-badge');
+      if (badgeAfterTimer) {
+        badgeAfterTimer.style.display = 'none';
+      }
+    }, 1000); // 1000 ms = 1 segundo
+
+    // Limpia el timer
+    return () => clearTimeout(timer);
+    
+  }, []); // El array vacío [] hace que se ejecute solo una vez
+
+  // 4. Añadimos 'return' para devolver tu aplicación
+  return (
+    <QueryClientProvider client={queryClient}>
+      <CartProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
+          <BrowserRouter>
+            <CartDrawer />
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/thank-you" element={<ThankYou />} />
+              <Route path="/admin" element={<Admin />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </BrowserRouter>
+        </TooltipProvider>
+      </CartProvider>
+    </QueryClientProvider>
+  );
+}; // <-- Se cierra el { de la función
 
 export default App;
