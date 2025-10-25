@@ -13,7 +13,29 @@ import Checkout from "./pages/Checkout";
 import ThankYou from "./pages/ThankYou";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import React, { useEffect } from 'react';
 
+function App() {
+
+  useEffect(() => {
+    // Se ejecuta después de que el componente se renderiza
+    const badge = document.getElementById('lovable-badge');
+    
+    if (badge) {
+      // Si encuentra el logo, lo oculta
+      badge.style.display = 'none';
+    }
+  }, []); // El array vacío [] hace que este efecto se ejecute solo una vez
+
+  // ...resto de tu componente
+  return (
+    <div className="App">
+      {/* ...el contenido de tu app */}
+    </div>
+  );
+}
+
+export default App;
 const queryClient = new QueryClient();
 
 const App = () => (
