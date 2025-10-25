@@ -1,29 +1,23 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Package, Clock } from "lucide-react";
 import Header from "@/components/Header";
-
 const ThankYou = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const orderId = searchParams.get('order');
-
   useEffect(() => {
     // If no order ID, redirect to home
     if (!orderId) {
       navigate("/");
     }
   }, [orderId, navigate]);
-
   if (!orderId) {
     return null;
   }
-
-  return (
-    <div className="min-h-screen bg-gray-50">
+  return <div className="min-h-screen bg-gray-50">
       <Header />
       
       <div className="container mx-auto px-4 py-8">
@@ -66,26 +60,15 @@ const ThankYou = () => {
               </div>
 
               <div className="space-y-3">
-                <Button 
-                  onClick={() => navigate("/")}
-                  className="w-full bg-pink-500 hover:bg-pink-600"
-                >
+                <Button onClick={() => navigate("/")} className="w-full bg-pink-500 hover:bg-pink-600">
                   Continuar Comprando
                 </Button>
-                <Button 
-                  onClick={() => navigate("/admin")}
-                  variant="outline"
-                  className="w-full"
-                >
-                  Ver Panel de Administración
-                </Button>
+                
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ThankYou;
