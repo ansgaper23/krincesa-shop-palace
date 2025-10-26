@@ -5,6 +5,13 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useCart } from "@/hooks/useCart";
 import { useStoreConfig } from "@/hooks/useProducts";
 import { useToast } from "@/hooks/use-toast";
@@ -18,9 +25,18 @@ const Checkout = () => {
   const { items, getTotal, clearCart } = useCart();
   const { data: storeConfig } = useStoreConfig();
   
+  const PERU_PROVINCES = [
+    "Amazonas", "Áncash", "Apurímac", "Arequipa", "Ayacucho", "Cajamarca", 
+    "Callao", "Cusco", "Huancavelica", "Huánuco", "Ica", "Junín", 
+    "La Libertad", "Lambayeque", "Lima", "Loreto", "Madre de Dios", 
+    "Moquegua", "Pasco", "Piura", "Puno", "San Martín", "Tacna", 
+    "Tumbes", "Ucayali"
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
+    province: "",
     notes: ""
   });
   
@@ -33,7 +49,7 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.phone.trim()) {
+    if (!formData.name.trim() || !formData.phone.trim() || !formData.province.trim()) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios.",
@@ -59,6 +75,7 @@ const Checkout = () => {
         customer_name: formData.name.trim(),
         customer_phone: formData.phone.trim(),
         customer_email: undefined,
+        province: formData.province.trim(),
         total_amount: getTotal(),
         notes: formData.notes.trim() || undefined,
         items: items
@@ -158,6 +175,26 @@ const Checkout = () => {
                     placeholder="+51999999999"
                     required
                   />
+                </div>
+
+                <div>
+                  <Label htmlFor="province">Provincia *</Label>
+                  <Select
+                    value={formData.province}
+                    onValueChange={(value) => handleInputChange("province", value)}
+                    required
+                  >
+                    <SelectTrigger id="province" className="w-full">
+                      <SelectValue placeholder="Selecciona tu provincia" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-[300px]">
+                      {PERU_PROVINCES.map((province) => (
+                        <SelectItem key={province} value={province}>
+                          {province}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 
                 <div>

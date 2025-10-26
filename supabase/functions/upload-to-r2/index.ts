@@ -142,9 +142,10 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('💥 Error uploading to R2:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     return new Response(
       JSON.stringify({ 
-        error: error.message,
+        error: errorMessage,
         details: 'Check the function logs for more information'
       }),
       {
@@ -176,7 +177,7 @@ async function hmacSha256(key: ArrayBuffer, message: string): Promise<string> {
 }
 
 async function getSignatureKey(key: string, dateStamp: string, regionName: string, serviceName: string): Promise<ArrayBuffer> {
-  const kSecret = new TextEncoder().encode('AWS4' + key);
+  const kSecret = new TextEncoder().encode('AWS4' + key).buffer;
   const kDate = await hmacSha256Buffer(kSecret, dateStamp);
   const kRegion = await hmacSha256Buffer(kDate, regionName);
   const kService = await hmacSha256Buffer(kRegion, serviceName);

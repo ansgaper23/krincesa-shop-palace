@@ -6,6 +6,7 @@ export interface OrderData {
   customer_name: string;
   customer_phone: string;
   customer_email?: string;
+  province?: string;
   total_amount: number;
   notes?: string;
   items: CartItem[];
@@ -20,6 +21,7 @@ export const saveOrderToDatabase = async (orderData: OrderData) => {
         customer_name: orderData.customer_name,
         customer_phone: orderData.customer_phone,
         customer_email: orderData.customer_email || null,
+        province: orderData.province || null,
         total_amount: orderData.total_amount,
         status: 'pendiente',
         notes: orderData.notes || null
@@ -65,7 +67,7 @@ export const saveOrderToDatabase = async (orderData: OrderData) => {
 
 export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any): string => {
   let template = storeConfig?.whatsapp_message_template || 
-    `NUEVO PEDIDO\n\nCliente: {{customer_name}}\nTelefono: {{customer_phone}}\n\nProductos:\n{{products_list}}\n\nTotal: S/ {{total_amount}}\n\nNotas: {{notes}}\n\nGracias por tu preferencia!`;
+    `NUEVO PEDIDO\n\nCliente: {{customer_name}}\nTelefono: {{customer_phone}}\nProvincia: {{province}}\n\nProductos:\n{{products_list}}\n\nTotal: S/ {{total_amount}}\n\nNotas: {{notes}}\n\nGracias por tu preferencia!`;
   
   // Build products list
   let productsList = '';
@@ -81,6 +83,7 @@ export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any):
     .replace(/\{\{customer_name\}\}/g, orderData.customer_name)
     .replace(/\{\{customer_phone\}\}/g, orderData.customer_phone)
     .replace(/\{\{customer_email\}\}/g, orderData.customer_email || '')
+    .replace(/\{\{province\}\}/g, orderData.province || '')
     .replace(/\{\{products_list\}\}/g, productsList.trim())
     .replace(/\{\{total_amount\}\}/g, orderData.total_amount.toFixed(2))
     .replace(/\{\{notes\}\}/g, orderData.notes || '');

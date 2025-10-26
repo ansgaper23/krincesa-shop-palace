@@ -254,7 +254,7 @@ const StoreConfigManager = () => {
             placeholder="NUEVO PEDIDO&#10;&#10;Cliente: {{customer_name}}&#10;Telefono: {{customer_phone}}&#10;&#10;Productos:&#10;{{products_list}}&#10;&#10;Total: S/ {{total_amount}}&#10;&#10;Notas: {{notes}}&#10;&#10;Gracias por tu preferencia!"
           />
           <p className="text-sm text-muted-foreground mt-2">
-            Variables disponibles: {"{"}{"{"} customer_name {"}"}{"}"}, {"{"}{"{"} customer_phone {"}"}{"}"}, {"{"}{"{"} products_list {"}"}{"}"}, {"{"}{"{"} total_amount {"}"}{"}"}, {"{"}{"{"} notes {"}"}{"}"}
+            Variables disponibles: {"{"}{"{"} customer_name {"}"}{"}"}, {"{"}{"{"} customer_phone {"}"}{"}"}, {"{"}{"{"} province {"}"}{"}"}, {"{"}{"{"} products_list {"}"}{"}"}, {"{"}{"{"} total_amount {"}"}{"}"}, {"{"}{"{"} notes {"}"}{"}"}
           </p>
         </div>
       </div>

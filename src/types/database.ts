@@ -56,6 +56,7 @@ export interface Order {
   customer_name: string;
   customer_phone: string;
   customer_email: string | null;
+  province: string | null;
   total_amount: number;
   status: string;
   notes: string | null;
