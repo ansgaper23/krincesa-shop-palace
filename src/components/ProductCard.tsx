@@ -22,7 +22,7 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   const isWholesaleOnly = product.price === product.wholesale_price && product.min_wholesale_quantity === 1;
 
   return (
-    <Link to={`/product/${product.id}`} className="block group">
+    <Link to={`/product/${product.slug}`} className="block group">
       <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-200 group-hover:scale-105 h-full">
         <div className="aspect-square bg-gray-100 overflow-hidden">
           <img

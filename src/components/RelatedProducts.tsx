@@ -33,7 +33,8 @@ const RelatedProducts = ({ currentProductId, categoryId }: RelatedProductsProps)
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {relatedProducts.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-            <Link to={`/product/${product.id}`}>
+            <Link to={`/product/${product.slug}`}>
+
               <div className="aspect-square bg-gray-100 overflow-hidden">
                 <img
                   src={product.image_url || '/placeholder.svg'}
@@ -44,7 +45,7 @@ const RelatedProducts = ({ currentProductId, categoryId }: RelatedProductsProps)
             </Link>
             
             <div className="p-4">
-              <Link to={`/product/${product.id}`}>
+              <Link to={`/product/${product.slug}`}>
                 <h3 className="font-semibold text-gray-800 mb-1 hover:text-pink-600 transition-colors line-clamp-2">
                   {product.name}
                 </h3>

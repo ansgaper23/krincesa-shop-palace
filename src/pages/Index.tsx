@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useCategories, useProducts, useStoreConfig } from "@/hooks/useProducts";
 import { ProductCard } from "@/components/ProductCard";
@@ -15,15 +15,13 @@ const Index = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const {
-    data: categories
-  } = useCategories();
-  const {
-    data: products
-  } = useProducts();
-  const {
-    data: storeConfig
-  } = useStoreConfig();
+  const [lastScrollY, setLastScrollY] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(20);
+  const loaderRef = useRef<HTMLDivElement | null>(null);
+  const { data: categories } = useCategories();
+  const { data: products } = useProducts();
+  const { data: storeConfig } = useStoreConfig();
+
 
   // Check for admin access code - support both "supersu" and "superu"
   useEffect(() => {
@@ -37,6 +35,8 @@ const Index = () => {
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) || product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch && product.is_active;
   }) || [];
+  const displayedProducts = !selectedCategory ? filteredProducts.slice(0, visibleCount) : filteredProducts;
+
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
@@ -54,7 +54,28 @@ const Index = () => {
     });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [lastScrollY]);
+
+  // Reset visible items when filters change
+  useEffect(() => {
+    setVisibleCount(20);
+  }, [selectedCategory, searchTerm]);
+
+  // Infinite scroll for "Todos"
+  useEffect(() => {
+    if (selectedCategory) return; // Only apply to "Todos"
+    const el = loaderRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        setVisibleCount((prev) => Math.min(prev + 16, filteredProducts.length));
+      }
+    }, { rootMargin: '200px' });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [filteredProducts.length, selectedCategory]);
+
   const handleWhatsAppHelp = () => {
+
     const whatsappNumber = storeConfig?.whatsapp_number || "+51999999999";
     const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
     const message = "Hola! Necesito ayuda, pueden ayudarme?";
@@ -103,10 +124,10 @@ const Index = () => {
         <div className="container mx-auto px-4">
           <div className="overflow-x-auto scrollbar-hide">
             <div className="flex gap-3 pb-2 min-w-min">
-              <Button variant={!selectedCategory ? "default" : "outline"} onClick={() => setSelectedCategory(null)} className="rounded-full shrink-0">
+              <Button size="sm" variant={!selectedCategory ? "default" : "outline"} onClick={() => setSelectedCategory(null)} className="rounded-full shrink-0 text-sm px-3">
                 Todos
               </Button>
-              {categories?.map(category => <Button key={category.id} variant={selectedCategory === category.id ? "default" : "outline"} onClick={() => setSelectedCategory(category.id)} className="rounded-full shrink-0">
+              {categories?.map(category => <Button key={category.id} size="sm" variant={selectedCategory === category.id ? "default" : "outline"} onClick={() => setSelectedCategory(category.id)} className="rounded-full shrink-0 text-sm px-3">
                   {category.name}
                 </Button>)}
             </div>
@@ -116,11 +137,16 @@ const Index = () => {
 
       {/* Products Grid */}
       <main className="flex-1 container mx-auto px-4 py-6">
-        {filteredProducts.length === 0 ? <div className="text-center py-12">
+        {displayedProducts.length === 0 ? <div className="text-center py-12">
             <p className="text-muted-foreground text-lg">No se encontraron productos</p>
-          </div> : <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {filteredProducts.map(product => <ProductCard key={product.id} product={product} />)}
-          </div>}
+          </div> : <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+              {displayedProducts.map(product => <ProductCard key={product.id} product={product} />)}
+            </div>
+            {!selectedCategory && displayedProducts.length < filteredProducts.length && (
+              <div ref={loaderRef} className="h-10" />
+            )}
+          </>}
       </main>
 
       {/* WhatsApp Help Button - Bottom Left */}

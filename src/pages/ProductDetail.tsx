@@ -2,7 +2,7 @@
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Plus, Minus, ShoppingCart } from 'lucide-react';
 import { useState } from 'react';
-import { useProduct } from '@/hooks/useProducts';
+import { useProductBySlug } from '@/hooks/useProducts';
 import { useCart } from '@/hooks/useCart';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -10,8 +10,8 @@ import Header from '@/components/Header';
 import RelatedProducts from '@/components/RelatedProducts';
 
 const ProductDetail = () => {
-  const { id } = useParams<{ id: string }>();
-  const { data: product, isLoading } = useProduct(id!);
+  const { slug } = useParams<{ slug: string }>();
+  const { data: product, isLoading } = useProductBySlug(slug!);
   const { addToCart } = useCart();
   const [quantity, setQuantity] = useState(1);
   const [selectedImage, setSelectedImage] = useState<string>('');

@@ -55,7 +55,7 @@ const App = () => {
             <CartDrawer />
             <Routes>
               <Route path="/" element={<Index />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
+              <Route path="/product/:slug" element={<ProductDetail />} />
               <Route path="/cart" element={<Cart />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/thank-you" element={<ThankYou />} />
