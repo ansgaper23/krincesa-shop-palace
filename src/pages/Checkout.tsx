@@ -178,7 +178,7 @@ const Checkout = () => {
                 </div>
 
                 <div>
-                  <Label htmlFor="province">Provincia *</Label>
+                  <Label htmlFor="province">Envío o entrega *</Label>
                   <Select
                     value={formData.province}
                     onValueChange={(value) => handleInputChange("province", value)}
