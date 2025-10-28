@@ -15,7 +15,6 @@ const Index = () => {
   const [showSearch, setShowSearch] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
   const [lastScrollY, setLastScrollY] = useState(0);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [visibleCount, setVisibleCount] = useState(20);
   const loaderRef = useRef<HTMLDivElement | null>(null);
   const { data: categories } = useCategories();

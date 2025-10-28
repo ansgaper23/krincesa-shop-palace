@@ -93,6 +93,37 @@ export const useProduct = (id: string) => {
   });
 };
 
+export const useProductBySlug = (slug: string) => {
+  return useQuery({
+    queryKey: ['product-by-slug', slug],
+    queryFn: async () => {
+      console.log('Fetching product by slug:', slug);
+      const { data, error } = await supabase
+        .from('products')
+        .select(`
+          *,
+          categories (
+            id,
+            name
+          )
+        `)
+        .eq('slug', slug)
+        .eq('is_active', true)
+        .single();
+
+      if (error) {
+        console.error('Error fetching product by slug:', error);
+        throw error;
+      }
+      
+      console.log('Product by slug fetched:', data?.name);
+      return data as any;
+    },
+    staleTime: 0,
+    gcTime: 0,
+  });
+};
+
 export const useCategories = () => {
   return useQuery({
     queryKey: ['categories'],
