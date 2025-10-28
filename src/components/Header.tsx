@@ -5,6 +5,7 @@ import { useStoreConfig } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
+import { useState, useEffect } from 'react';
 interface HeaderProps {
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
@@ -23,6 +24,32 @@ const Header = ({
   } = useStoreConfig();
   const navigate = useNavigate();
   const itemCount = getItemCount();
+  const [showLogo, setShowLogo] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Si estamos arriba del todo (menos de 10px), mostrar logo
+      if (currentScrollY < 10) {
+        setShowLogo(true);
+      } 
+      // Si bajamos, ocultar logo
+      else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+        setShowLogo(false);
+      }
+      // Si subimos, mostrar logo
+      else if (currentScrollY < lastScrollY) {
+        setShowLogo(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [lastScrollY]);
   const handleSearchChange = (term: string) => {
     // Detectar si se escribe "supersu" y redirigir al dashboard
     if (term.toLowerCase() === 'supersu') {
@@ -37,9 +64,15 @@ const Header = ({
   };
   return <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
-        {/* Logo centrado */}
+        {/* Logo centrado con efecto de desvanecimiento */}
         {!hideLogo && (
-          <div className="flex justify-center mb-4">
+          <div 
+            className={`flex justify-center mb-4 transition-all duration-500 ease-in-out overflow-hidden ${
+              showLogo 
+                ? 'opacity-100 max-h-20' 
+                : 'opacity-0 max-h-0 mb-0'
+            }`}
+          >
             <Link to="/" className="flex items-center space-x-3">
               {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-pink-600 text-center">
                   {storeConfig?.store_name || 'Krincesa Distribuidora'}
