@@ -8,10 +8,12 @@ import { Input } from '@/components/ui/input';
 interface HeaderProps {
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
+  hideLogo?: boolean;
 }
 const Header = ({
   searchTerm = "",
-  onSearchChange
+  onSearchChange,
+  hideLogo = false
 }: HeaderProps) => {
   const {
     getItemCount
@@ -36,13 +38,15 @@ const Header = ({
   return <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
       <div className="container mx-auto px-4 py-4">
         {/* Logo centrado */}
-        <div className="flex justify-center mb-4">
-          <Link to="/" className="flex items-center space-x-3">
-            {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-pink-600 text-center">
-                {storeConfig?.store_name || 'Krincesa Distribuidora'}
-              </h1>}
-          </Link>
-        </div>
+        {!hideLogo && (
+          <div className="flex justify-center mb-4">
+            <Link to="/" className="flex items-center space-x-3">
+              {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-pink-600 text-center">
+                  {storeConfig?.store_name || 'Krincesa Distribuidora'}
+                </h1>}
+            </Link>
+          </div>
+        )}
 
         {/* Buscador y carrito */}
         <div className="flex items-center justify-between gap-4">

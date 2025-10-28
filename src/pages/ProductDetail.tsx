@@ -19,7 +19,7 @@ const ProductDetail = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <Header hideLogo={true} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pink-500 mx-auto"></div>
@@ -33,7 +33,7 @@ const ProductDetail = () => {
   if (!product) {
     return (
       <div className="min-h-screen bg-gray-50">
-        <Header />
+        <Header hideLogo={true} />
         <div className="flex items-center justify-center py-20">
           <div className="text-center">
             <h2 className="text-2xl font-bold text-gray-800 mb-2">Producto no encontrado</h2>
@@ -60,7 +60,7 @@ const ProductDetail = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Header />
+      <Header hideLogo={true} />
 
       <div className="container mx-auto px-4 py-8">
         {/* Breadcrumb */}
