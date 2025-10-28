@@ -88,6 +88,13 @@ export const generateWhatsAppMessage = (orderData: OrderData, storeConfig: any):
     .replace(/\{\{total_amount\}\}/g, orderData.total_amount.toFixed(2))
     .replace(/\{\{notes\}\}/g, orderData.notes || '');
   
+  // If no notes, remove the notes line entirely
+  if (!orderData.notes || orderData.notes.trim() === '') {
+    message = message
+      .replace(/\n*Notas:\s*\n*/gi, '\n')
+      .replace(/\n{3,}/g, '\n\n'); // Clean up multiple newlines
+  }
+  
   return encodeURIComponent(message);
 };
 
