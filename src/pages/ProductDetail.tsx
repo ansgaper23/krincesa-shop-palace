@@ -119,7 +119,7 @@ const ProductDetail = () => {
           {/* Información del producto */}
           <div className="space-y-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">{product.name}</h1>
+              <h1 className="text-3xl font-bold mb-2" style={{ color: 'var(--theme-product-title)' }}>{product.name}</h1>
               {product.brand && (
                 <Badge variant="secondary" className="mb-4">
                   {product.brand}
@@ -134,7 +134,7 @@ const ProductDetail = () => {
 
             {product.description && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-800 mb-2">Descripción</h3>
+                <h3 className="text-lg font-semibold mb-2" style={{ color: 'var(--theme-product-title)' }}>Descripción</h3>
                 <p className="text-gray-600 leading-relaxed">{product.description}</p>
               </div>
             )}
@@ -144,7 +144,7 @@ const ProductDetail = () => {
               <div className="space-y-4">
                 <div className="flex justify-between items-center">
                   <span className="text-gray-600">Precio por unidad:</span>
-                  <span className="text-xl font-bold text-gray-800">S/ {product.price.toFixed(2)}</span>
+                  <span className="text-xl font-bold" style={{ color: 'var(--theme-product-price)' }}>S/ {product.price.toFixed(2)}</span>
                 </div>
                 
                 <div className="flex justify-between items-center">
@@ -164,7 +164,7 @@ const ProductDetail = () => {
 
             {/* Selector de cantidad */}
             <div className="bg-white p-6 rounded-lg shadow-md">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Cantidad</h3>
+              <h3 className="text-lg font-semibold mb-4" style={{ color: 'var(--theme-product-title)' }}>Cantidad</h3>
               
               <div className="flex items-center space-x-4 mb-4">
                 <Button
@@ -204,13 +204,17 @@ const ProductDetail = () => {
                 </div>
                 <div className="flex justify-between text-lg font-bold border-t pt-2">
                   <span>Total:</span>
-                  <span className="text-pink-600">S/ {totalPrice.toFixed(2)}</span>
+                  <span style={{ color: 'var(--theme-product-price)' }}>S/ {totalPrice.toFixed(2)}</span>
                 </div>
               </div>
 
               <Button
                 onClick={handleAddToCart}
-                className="w-full bg-pink-500 hover:bg-pink-600 text-white"
+                className="w-full"
+                style={{ 
+                  backgroundColor: 'var(--theme-primary)',
+                  color: 'var(--theme-button-text)'
+                }}
                 size="lg"
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />

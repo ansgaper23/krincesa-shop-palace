@@ -7,6 +7,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { CartProvider } from "@/hooks/useCart";
 import { CartDrawer } from "@/components/CartDrawer";
+import { useThemeColors } from "./hooks/useThemeColors";
 import Index from "./pages/Index";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
@@ -18,11 +19,9 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// 2. Cambiamos tu 'const App = () => (' por 'const App = () => {'
-//    Esto nos permite añadir lógica ANTES del 'return'.
-const App = () => {
-
-  // 3. PEGAMOS EL CÓDIGO 'useEffect' AQUÍ
+const AppContent = () => {
+  useThemeColors();
+  
   useEffect(() => {
     // Intenta ocultar el logo de inmediato
     const badge = document.getElementById('lovable-badge');
@@ -44,25 +43,30 @@ const App = () => {
     
   }, []); // El array vacío [] hace que se ejecute solo una vez
 
-  // 4. Añadimos 'return' para devolver tu aplicación
+  return (
+    <BrowserRouter>
+      <CartDrawer />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/product/:slug" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/thank-you" element={<ThankYou />} />
+        <Route path="/admin" element={<Admin />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </BrowserRouter>
+  );
+};
+
+const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <CartProvider>
         <TooltipProvider>
           <Toaster />
           <Sonner />
-          <BrowserRouter>
-            <CartDrawer />
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/product/:slug" element={<ProductDetail />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/checkout" element={<Checkout />} />
-              <Route path="/thank-you" element={<ThankYou />} />
-              <Route path="/admin" element={<Admin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
+          <AppContent />
         </TooltipProvider>
       </CartProvider>
     </QueryClientProvider>

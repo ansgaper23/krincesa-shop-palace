@@ -226,12 +226,20 @@ export type Database = {
       }
       store_config: {
         Row: {
+          button_text_color: string | null
           email: string | null
           facebook_url: string | null
+          footer_bg_color: string | null
+          footer_text_color: string | null
+          header_bg_color: string | null
+          header_text_color: string | null
           id: string
           instagram_url: string | null
           logo_url: string | null
+          primary_color: string | null
           privacy_policy: string | null
+          product_price_color: string | null
+          product_title_color: string | null
           site_description: string | null
           store_name: string
           terms_and_conditions: string | null
@@ -241,12 +249,20 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          button_text_color?: string | null
           email?: string | null
           facebook_url?: string | null
+          footer_bg_color?: string | null
+          footer_text_color?: string | null
+          header_bg_color?: string | null
+          header_text_color?: string | null
           id?: string
           instagram_url?: string | null
           logo_url?: string | null
+          primary_color?: string | null
           privacy_policy?: string | null
+          product_price_color?: string | null
+          product_title_color?: string | null
           site_description?: string | null
           store_name?: string
           terms_and_conditions?: string | null
@@ -256,12 +272,20 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          button_text_color?: string | null
           email?: string | null
           facebook_url?: string | null
+          footer_bg_color?: string | null
+          footer_text_color?: string | null
+          header_bg_color?: string | null
+          header_text_color?: string | null
           id?: string
           instagram_url?: string | null
           logo_url?: string | null
+          primary_color?: string | null
           privacy_policy?: string | null
+          product_price_color?: string | null
+          product_title_color?: string | null
           site_description?: string | null
           store_name?: string
           terms_and_conditions?: string | null

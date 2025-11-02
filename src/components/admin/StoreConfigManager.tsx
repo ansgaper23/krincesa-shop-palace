@@ -25,7 +25,15 @@ const StoreConfigManager = () => {
     terms_and_conditions: '',
     privacy_policy: '',
     site_description: '',
-    whatsapp_message_template: ''
+    whatsapp_message_template: '',
+    primary_color: '#e91e8c',
+    header_bg_color: '#ffffff',
+    header_text_color: '#000000',
+    footer_bg_color: '#f8f9fa',
+    footer_text_color: '#6c757d',
+    product_title_color: '#1a1a1a',
+    product_price_color: '#e91e8c',
+    button_text_color: '#ffffff'
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,7 +52,15 @@ const StoreConfigManager = () => {
         terms_and_conditions: storeConfig.terms_and_conditions || '',
         privacy_policy: storeConfig.privacy_policy || '',
         site_description: storeConfig.site_description || '',
-        whatsapp_message_template: storeConfig.whatsapp_message_template || ''
+        whatsapp_message_template: storeConfig.whatsapp_message_template || '',
+        primary_color: storeConfig.primary_color || '#e91e8c',
+        header_bg_color: storeConfig.header_bg_color || '#ffffff',
+        header_text_color: storeConfig.header_text_color || '#000000',
+        footer_bg_color: storeConfig.footer_bg_color || '#f8f9fa',
+        footer_text_color: storeConfig.footer_text_color || '#6c757d',
+        product_title_color: storeConfig.product_title_color || '#1a1a1a',
+        product_price_color: storeConfig.product_price_color || '#e91e8c',
+        button_text_color: storeConfig.button_text_color || '#ffffff'
       });
     }
   }, [storeConfig]);
@@ -77,6 +93,14 @@ const StoreConfigManager = () => {
         privacy_policy: formData.privacy_policy.trim() || null,
         site_description: formData.site_description.trim() || null,
         whatsapp_message_template: formData.whatsapp_message_template.trim() || null,
+        primary_color: formData.primary_color,
+        header_bg_color: formData.header_bg_color,
+        header_text_color: formData.header_text_color,
+        footer_bg_color: formData.footer_bg_color,
+        footer_text_color: formData.footer_text_color,
+        product_title_color: formData.product_title_color,
+        product_price_color: formData.product_price_color,
+        button_text_color: formData.button_text_color,
         updated_at: new Date().toISOString()
       };
 
@@ -282,6 +306,165 @@ const StoreConfigManager = () => {
             rows={6}
             placeholder="Ingresa la política de privacidad de tu tienda..."
           />
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-800">Personalización de Colores</h3>
+        <p className="text-sm text-muted-foreground">Personaliza los colores de tu tienda</p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div>
+            <Label htmlFor="primary_color">Color Primario (Botones)</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="primary_color"
+                type="color"
+                value={formData.primary_color}
+                onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.primary_color}
+                onChange={(e) => setFormData({ ...formData, primary_color: e.target.value })}
+                placeholder="#e91e8c"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="button_text_color">Color de Texto de Botones</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="button_text_color"
+                type="color"
+                value={formData.button_text_color}
+                onChange={(e) => setFormData({ ...formData, button_text_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.button_text_color}
+                onChange={(e) => setFormData({ ...formData, button_text_color: e.target.value })}
+                placeholder="#ffffff"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="header_bg_color">Color de Fondo del Encabezado</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="header_bg_color"
+                type="color"
+                value={formData.header_bg_color}
+                onChange={(e) => setFormData({ ...formData, header_bg_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.header_bg_color}
+                onChange={(e) => setFormData({ ...formData, header_bg_color: e.target.value })}
+                placeholder="#ffffff"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="header_text_color">Color de Texto del Encabezado</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="header_text_color"
+                type="color"
+                value={formData.header_text_color}
+                onChange={(e) => setFormData({ ...formData, header_text_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.header_text_color}
+                onChange={(e) => setFormData({ ...formData, header_text_color: e.target.value })}
+                placeholder="#000000"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="footer_bg_color">Color de Fondo del Pie de Página</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="footer_bg_color"
+                type="color"
+                value={formData.footer_bg_color}
+                onChange={(e) => setFormData({ ...formData, footer_bg_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.footer_bg_color}
+                onChange={(e) => setFormData({ ...formData, footer_bg_color: e.target.value })}
+                placeholder="#f8f9fa"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="footer_text_color">Color de Texto del Pie de Página</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="footer_text_color"
+                type="color"
+                value={formData.footer_text_color}
+                onChange={(e) => setFormData({ ...formData, footer_text_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.footer_text_color}
+                onChange={(e) => setFormData({ ...formData, footer_text_color: e.target.value })}
+                placeholder="#6c757d"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="product_title_color">Color de Títulos de Productos</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="product_title_color"
+                type="color"
+                value={formData.product_title_color}
+                onChange={(e) => setFormData({ ...formData, product_title_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.product_title_color}
+                onChange={(e) => setFormData({ ...formData, product_title_color: e.target.value })}
+                placeholder="#1a1a1a"
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="product_price_color">Color de Precios de Productos</Label>
+            <div className="flex gap-2 items-center">
+              <Input
+                id="product_price_color"
+                type="color"
+                value={formData.product_price_color}
+                onChange={(e) => setFormData({ ...formData, product_price_color: e.target.value })}
+                className="w-20 h-10"
+              />
+              <Input
+                type="text"
+                value={formData.product_price_color}
+                onChange={(e) => setFormData({ ...formData, product_price_color: e.target.value })}
+                placeholder="#e91e8c"
+              />
+            </div>
+          </div>
         </div>
       </div>
 

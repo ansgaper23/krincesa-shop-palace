@@ -49,14 +49,14 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             )}
           </div>
           
-          <h3 className="font-semibold text-gray-800 mb-2 text-sm line-clamp-2 min-h-[2.5rem]">
+          <h3 className="font-semibold mb-2 text-sm line-clamp-2 min-h-[2.5rem]" style={{ color: 'var(--theme-product-title)' }}>
             {product.name}
           </h3>
           
           <div className="space-y-1 mb-3">
             <div className="flex justify-between items-center">
               <span className="text-xs text-gray-600">Por unidad:</span>
-              <span className="font-bold text-gray-800 text-sm">S/ {product.price.toFixed(2)}</span>
+              <span className="font-bold text-sm" style={{ color: 'var(--theme-product-price)' }}>S/ {product.price.toFixed(2)}</span>
             </div>
             {!isWholesaleOnly && (
               <div className="flex justify-between items-center">
@@ -76,7 +76,11 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           
           <Button
             onClick={handleAddToCart}
-            className="w-full bg-pink-500 hover:bg-pink-600 text-white text-xs py-2"
+            className="w-full text-xs py-2"
+            style={{ 
+              backgroundColor: 'var(--theme-primary)',
+              color: 'var(--theme-button-text)'
+            }}
             size="sm"
           >
             <ShoppingCart className="h-3 w-3 mr-1" />

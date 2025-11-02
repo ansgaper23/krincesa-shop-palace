@@ -112,6 +112,11 @@
   }
 }
 
+/* Hover effect for custom colored buttons */
+button[style*="--theme-primary"]:hover {
+  filter: brightness(0.9);
+  transition: filter 0.2s ease;
+}
 
 #lovable-badge {
   display: none !important;

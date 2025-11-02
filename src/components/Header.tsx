@@ -62,7 +62,7 @@ const Header = ({
       onSearchChange(term);
     }
   };
-  return <header className="bg-white shadow-sm border-b-2 border-pink-500 sticky top-0 z-50">
+  return <header className="shadow-sm border-b-2 sticky top-0 z-50" style={{ backgroundColor: 'var(--theme-header-bg)', borderBottomColor: 'var(--theme-primary)' }}>
       <div className="container mx-auto px-4 py-4">
         {/* Logo centrado con efecto de desvanecimiento */}
         {!hideLogo && (
@@ -74,7 +74,7 @@ const Header = ({
             }`}
           >
             <Link to="/" className="flex items-center space-x-3">
-              {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-pink-600 text-center">
+              {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-center" style={{ color: 'var(--theme-header-text)' }}>
                   {storeConfig?.store_name || 'Krincesa Distribuidora'}
                 </h1>}
             </Link>
