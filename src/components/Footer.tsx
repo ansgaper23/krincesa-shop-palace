@@ -19,7 +19,7 @@ const Footer = () => {
           {/* Store Information */}
           <div>
             <h3 className="text-lg font-semibold mb-4 text-pink-600">{storeConfig?.store_name || 'Krincesa Distribuidora'}</h3>
-            <p className="text-gray-600 text-sm mb-4">
+            <p className="text-gray-600 text-sm mb-4 whitespace-pre-line">
               {storeConfig?.site_description || 'Tu tienda de confianza para productos de belleza y accesorios en todo el Perú.'}
             </p>
           </div>

@@ -74,10 +74,9 @@ const Index = () => {
   }, [filteredProducts.length, selectedCategory]);
 
   const handleWhatsAppHelp = () => {
-
     const whatsappNumber = storeConfig?.whatsapp_number || "+51999999999";
     const cleanNumber = whatsappNumber.replace(/[^\d+]/g, '');
-    const message = "Hola! Necesito ayuda, pueden ayudarme?";
+    const message = "Hola Krincesa Distribuidora 😊👑💖👋🏻\nDeseo...";
     window.open(`https://wa.me/${cleanNumber}?text=${encodeURIComponent(message)}`, '_blank');
   };
   return <div className="min-h-screen bg-background flex flex-col">
@@ -108,7 +107,7 @@ const Index = () => {
               <h1 className="text-xl font-bold mb-1">
                 {storeConfig?.store_name || 'Krincesa Distribuidora'}
               </h1>
-              <p className="text-sm text-muted-foreground px-4">
+              <p className="text-sm text-muted-foreground px-4 whitespace-pre-line">
                 {storeConfig?.site_description || 'Descubre nuestra amplia selección de productos de calidad'}
               </p>
               <p className="text-sm text-muted-foreground mt-1">
