@@ -5,7 +5,7 @@ import { useStoreConfig } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 interface HeaderProps {
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
@@ -25,31 +25,27 @@ const Header = ({
   const navigate = useNavigate();
   const itemCount = getItemCount();
   const [showLogo, setShowLogo] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
+      const lastY = lastScrollYRef.current;
       
-      // Si estamos arriba del todo (menos de 10px), mostrar logo
       if (currentScrollY < 10) {
         setShowLogo(true);
-      } 
-      // Si bajamos, ocultar logo
-      else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+      } else if (currentScrollY > lastY && currentScrollY > 50) {
         setShowLogo(false);
-      }
-      // Si subimos, mostrar logo
-      else if (currentScrollY < lastScrollY) {
+      } else if (currentScrollY < lastY) {
         setShowLogo(true);
       }
       
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
   const handleSearchChange = (term: string) => {
     // Detectar si se escribe "supersu" y redirigir al dashboard
     if (term.toLowerCase() === 'supersu') {

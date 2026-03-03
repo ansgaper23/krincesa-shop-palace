@@ -17,7 +17,7 @@ const Index = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [hideHeader, setHideHeader] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const lastScrollYRef = useRef(0);
   const [visibleCount, setVisibleCount] = useState(20);
   const [quickViewProduct, setQuickViewProduct] = useState<(Product & { categories: Category | null }) | null>(null);
   const loaderRef = useRef<HTMLDivElement | null>(null);
@@ -49,11 +49,11 @@ const Index = () => {
       } else {
         setHideHeader(false);
       }
-      setLastScrollY(currentScrollY);
+      lastScrollYRef.current = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+  }, []);
 
   useEffect(() => {
     setVisibleCount(20);
@@ -92,7 +92,19 @@ const Index = () => {
 
           {showSearch && (
             <div className="mb-4">
-              <Input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="w-full" />
+              <Input 
+                type="text" 
+                placeholder="Buscar productos..." 
+                value={searchTerm} 
+                onChange={e => setSearchTerm(e.target.value)} 
+                onBlur={() => {
+                  if (!searchTerm.trim()) {
+                    setTimeout(() => setShowSearch(false), 150);
+                  }
+                }}
+                autoFocus
+                className="w-full" 
+              />
             </div>
           )}
 
