@@ -165,7 +165,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
       stock: parseInt(formData.stock) || 0,
-      slug: '',
+      slug: formData.name.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') + '-' + Date.now(),
       updated_at: new Date().toISOString()
     };
 
