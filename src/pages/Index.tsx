@@ -44,11 +44,19 @@ const Index = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > 50) {
+      const lastY = lastScrollYRef.current;
+      const delta = currentScrollY - lastY;
+      
+      if (Math.abs(delta) < 5) return;
+      
+      if (currentScrollY < 10) {
+        setHideHeader(false);
+      } else if (delta > 0 && currentScrollY > 80) {
         setHideHeader(true);
-      } else {
+      } else if (delta < -10) {
         setHideHeader(false);
       }
+      
       lastScrollYRef.current = currentScrollY;
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -82,7 +90,7 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Top Navigation Bar */}
-      <header className={`bg-background border-b sticky top-0 z-40 transition-all duration-500 ease-in-out ${hideHeader ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+      <header className={`bg-background border-b sticky top-0 z-40 transition-all duration-700 ease-in-out ${hideHeader ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
         <div className="container mx-auto px-4 py-3">
           <div className="flex items-center justify-between gap-3 mb-4">
             <Button variant="ghost" size="icon" onClick={() => setShowSearch(!showSearch)}>
