@@ -67,10 +67,10 @@ const Header = ({
         {/* Logo centrado con efecto de desvanecimiento */}
         {!hideLogo && (
           <div 
-            className={`flex justify-center mb-4 transition-all duration-500 ease-in-out overflow-hidden ${
+            className={`flex justify-center mb-4 overflow-hidden transition-all ease-in-out ${
               showLogo 
-                ? 'opacity-100 max-h-20' 
-                : 'opacity-0 max-h-0 mb-0'
+                ? 'opacity-100 max-h-20 duration-700' 
+                : 'opacity-0 max-h-0 mb-0 duration-500'
             }`}
           >
             <Link to="/" className="flex items-center space-x-3">
