@@ -153,6 +153,29 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       return;
     }
     
+    const baseSlug = formData.name.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+    
+    let finalSlug = baseSlug;
+    if (!editingProduct || editingProduct.name !== formData.name.trim()) {
+      const { data: existing } = await supabase
+        .from('products')
+        .select('slug')
+        .like('slug', `${baseSlug}%`);
+      
+      if (existing && existing.length > 0) {
+        const existingSlugs = new Set(existing.map((p: any) => p.slug));
+        if (existingSlugs.has(baseSlug)) {
+          let counter = 2;
+          while (existingSlugs.has(`${baseSlug}-${counter}`)) {
+            counter++;
+          }
+          finalSlug = `${baseSlug}-${counter}`;
+        }
+      }
+    } else {
+      finalSlug = editingProduct.slug;
+    }
+
     const productData = {
       name: formData.name.trim(),
       description: formData.description?.trim() || null,
@@ -165,7 +188,7 @@ const ProductForm = ({ isOpen, onClose, editingProduct, onSuccess }: ProductForm
       show_dozen_message: formData.show_dozen_message,
       is_active: formData.is_active,
       stock: parseInt(formData.stock) || 0,
-      slug: formData.name.trim().toLowerCase().replace(/[^a-z0-9\s-]/g, '').replace(/\s+/g, '-').replace(/-+/g, '-') + '-' + Date.now(),
+      slug: finalSlug,
       updated_at: new Date().toISOString()
     };
 
