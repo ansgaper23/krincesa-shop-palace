@@ -67,11 +67,13 @@ const Header = ({
         {/* Logo centrado con efecto de desvanecimiento */}
         {!hideLogo && (
           <div 
-            className={`flex justify-center mb-4 overflow-hidden transition-all ease-in-out ${
-              showLogo 
-                ? 'opacity-100 max-h-20 duration-700' 
-                : 'opacity-0 max-h-0 mb-0 duration-500'
-            }`}
+            className="flex justify-center mb-4 overflow-hidden"
+            style={{
+              transition: 'opacity 0.8s ease-in-out, max-height 0.8s ease-in-out, margin-bottom 0.8s ease-in-out',
+              opacity: showLogo ? 1 : 0,
+              maxHeight: showLogo ? '5rem' : '0px',
+              marginBottom: showLogo ? '1rem' : '0px',
+            }}
           >
             <Link to="/" className="flex items-center space-x-3">
               {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-center" style={{ color: 'var(--theme-header-text)' }}>
