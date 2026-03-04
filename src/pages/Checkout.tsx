@@ -217,17 +217,24 @@ const Checkout = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {items.map((item) => (
+                  {items.map((item) => {
+                    const isWholesale = item.quantity >= item.product.min_wholesale_quantity;
+                    const unitPrice = isWholesale ? item.product.wholesale_price : item.product.price;
+                    return (
                     <div key={item.product.id} className="flex justify-between items-center py-2 border-b">
                       <div className="flex-1">
                         <h4 className="font-medium">{item.product.name}</h4>
-                        <p className="text-sm text-gray-600">Cantidad: {item.quantity}</p>
+                        <p className="text-sm text-gray-600">
+                          Cantidad: {item.quantity} × S/ {unitPrice.toFixed(2)}
+                          {isWholesale && <span className="text-green-600 ml-1">(por mayor)</span>}
+                        </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-medium">S/ {(item.product.price * item.quantity).toFixed(2)}</p>
+                        <p className="font-medium">S/ {(unitPrice * item.quantity).toFixed(2)}</p>
                       </div>
                     </div>
-                  ))}
+                    );
+                  })}
                   
                   <div className="flex justify-between items-center pt-4 border-t-2 border-pink-200">
                     <span className="text-lg font-bold">Total:</span>

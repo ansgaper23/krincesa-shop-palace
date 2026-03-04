@@ -38,10 +38,8 @@ const Header = ({
       
       if (currentScrollY < 10) {
         setShowLogo(true);
-      } else if (delta > 0 && currentScrollY > 50) {
+      } else if (currentScrollY > 50) {
         setShowLogo(false);
-      } else if (delta < 0) {
-        setShowLogo(true);
       }
       
       lastScrollYRef.current = currentScrollY;
