@@ -31,12 +31,16 @@ const Header = ({
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
       const lastY = lastScrollYRef.current;
+      const delta = currentScrollY - lastY;
+      
+      // Require a minimum scroll delta to prevent flicker from layout shifts
+      if (Math.abs(delta) < 5) return;
       
       if (currentScrollY < 10) {
         setShowLogo(true);
-      } else if (currentScrollY > lastY && currentScrollY > 50) {
+      } else if (delta > 0 && currentScrollY > 50) {
         setShowLogo(false);
-      } else if (currentScrollY < lastY) {
+      } else if (delta < 0) {
         setShowLogo(true);
       }
       
