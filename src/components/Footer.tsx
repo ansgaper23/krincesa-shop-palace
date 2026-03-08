@@ -111,7 +111,7 @@ const Footer = () => {
                   aria-label="Contáctanos por WhatsApp"
                   style={{ color: 'var(--theme-footer-text)' }}
                 >
-                  <MessageCircle className="h-6 w-6" />
+                  <WhatsAppIcon className="h-6 w-6" />
                 </button>
               )}
             </div>
