@@ -57,15 +57,6 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.province.trim()) {
-      toast({
-        title: "Error",
-        description: "Por favor completa todos los campos obligatorios.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (items.length === 0) {
       toast({
         title: "Error",
@@ -73,6 +64,19 @@ const Checkout = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    try {
+      checkoutSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Error de validación",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);
