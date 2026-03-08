@@ -46,7 +46,7 @@ const Footer = () => {
               
               {storeConfig?.whatsapp_number && (
                 <div className="flex items-center space-x-3">
-                  <MessageCircle className="h-4 w-4" style={{ color: 'var(--theme-primary)' }} />
+                  <WhatsAppIcon className="h-4 w-4" style={{ color: 'var(--theme-primary)' }} />
                   <button 
                     onClick={handleWhatsAppClick}
                     className="hover:opacity-80 text-sm"
