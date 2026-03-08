@@ -51,10 +51,8 @@ const Index = () => {
       
       if (currentScrollY < 10) {
         setHideHeader(false);
-      } else if (delta > 0 && currentScrollY > 80) {
+      } else if (currentScrollY > 50) {
         setHideHeader(true);
-      } else if (delta < -10) {
-        setHideHeader(false);
       }
       
       lastScrollYRef.current = currentScrollY;
