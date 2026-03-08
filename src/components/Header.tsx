@@ -49,12 +49,6 @@ const Header = ({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
   const handleSearchChange = (term: string) => {
-    // Detectar si se escribe "supersu" y redirigir al dashboard
-    if (term.toLowerCase() === 'supersu') {
-      navigate('/supersu');
-      return;
-    }
-
     // Comportamiento normal del buscador
     if (onSearchChange) {
       onSearchChange(term);

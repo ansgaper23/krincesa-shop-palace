@@ -1,5 +1,13 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
+import { z } from "zod";
+
+const checkoutSchema = z.object({
+  name: z.string().trim().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre no puede exceder 100 caracteres").regex(/^[a-záéíóúñA-ZÁÉÍÓÚÑ\s]+$/, "El nombre solo puede contener letras y espacios"),
+  phone: z.string().trim().regex(/^\+?[0-9]{9,15}$/, "Formato de teléfono inválido").min(9, "El teléfono debe tener al menos 9 dígitos").max(15, "El teléfono no puede exceder 15 dígitos"),
+  province: z.string().trim().min(1, "Selecciona una provincia"),
+  notes: z.string().max(500, "Las notas no pueden exceder 500 caracteres").optional()
+});
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -49,15 +57,6 @@ const Checkout = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.name.trim() || !formData.phone.trim() || !formData.province.trim()) {
-      toast({
-        title: "Error",
-        description: "Por favor completa todos los campos obligatorios.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (items.length === 0) {
       toast({
         title: "Error",
@@ -65,6 +64,19 @@ const Checkout = () => {
         variant: "destructive",
       });
       return;
+    }
+
+    try {
+      checkoutSchema.parse(formData);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Error de validación",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsSubmitting(true);

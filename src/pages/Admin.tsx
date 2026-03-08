@@ -1,6 +1,7 @@
 
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -14,6 +15,25 @@ import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft } f
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
+  const navigate = useNavigate();
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return navigate('/admin/login');
+      supabase.from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .single()
+        .then(({ data }) => {
+          if (!data) return navigate('/');
+          setAuthed(true);
+        });
+    });
+  }, [navigate]);
+
+  if (!authed) return <div className="min-h-screen flex items-center justify-center">Verificando acceso...</div>;
 
   const tabs = [
     {
