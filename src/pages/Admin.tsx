@@ -15,6 +15,25 @@ import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft } f
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
+  const navigate = useNavigate();
+  const [authed, setAuthed] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) return navigate('/admin/login');
+      supabase.from('user_roles')
+        .select('role')
+        .eq('user_id', session.user.id)
+        .eq('role', 'admin')
+        .single()
+        .then(({ data }) => {
+          if (!data) return navigate('/');
+          setAuthed(true);
+        });
+    });
+  }, [navigate]);
+
+  if (!authed) return <div className="min-h-screen flex items-center justify-center">Verificando acceso...</div>;
 
   const tabs = [
     {

@@ -25,13 +25,7 @@ const Index = () => {
   const { data: products, isLoading } = useProducts();
   const { data: storeConfig } = useStoreConfig();
 
-  // Check for admin access code
-  useEffect(() => {
-    const term = searchTerm.toLowerCase().trim();
-    if (term === "supersu" || term === "superu") {
-      navigate("/admin");
-    }
-  }, [searchTerm, navigate]);
+  // Backdoor access removed for security
 
   const filteredProducts = products?.filter(product => {
     const matchesCategory = !selectedCategory || product.category_id === selectedCategory;
