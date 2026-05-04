@@ -1,96 +1,188 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search } from 'lucide-react';
+import { ShoppingCart, Search, Menu, X, ChevronDown } from 'lucide-react';
 import { useCart } from '@/hooks/useCart';
-import { useStoreConfig } from '@/hooks/useProducts';
+import { useStoreConfig, useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
-import { useState, useEffect, useRef } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { useState, useEffect } from 'react';
+
 interface HeaderProps {
   searchTerm?: string;
   onSearchChange?: (term: string) => void;
-  hideLogo?: boolean;
+  onSelectCategory?: (id: string | null) => void;
 }
-const Header = ({
-  searchTerm = "",
-  onSearchChange,
-  hideLogo = false
-}: HeaderProps) => {
-  const {
-    getItemCount
-  } = useCart();
-  const {
-    data: storeConfig
-  } = useStoreConfig();
+
+const Header = ({ searchTerm = '', onSearchChange, onSelectCategory }: HeaderProps) => {
+  const { getItemCount } = useCart();
+  const { data: storeConfig } = useStoreConfig();
+  const { data: categories } = useCategories();
   const navigate = useNavigate();
   const itemCount = getItemCount();
-  const [showLogo, setShowLogo] = useState(true);
-  const lastScrollYRef = useRef(0);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [catsOpen, setCatsOpen] = useState(false);
 
+  // Hot keyword for admin access
   useEffect(() => {
-    const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-      const lastY = lastScrollYRef.current;
-      const delta = currentScrollY - lastY;
-      
-      // Require a minimum scroll delta to prevent flicker from layout shifts
-      if (Math.abs(delta) < 5) return;
-      
-      if (currentScrollY < 10) {
-        setShowLogo(true);
-      } else if (currentScrollY > 50) {
-        setShowLogo(false);
-      }
-      
-      lastScrollYRef.current = currentScrollY;
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-  const handleSearchChange = (term: string) => {
-    // Comportamiento normal del buscador
-    if (onSearchChange) {
-      onSearchChange(term);
+    if (searchTerm.toLowerCase().trim() === 'supersu') {
+      onSearchChange?.('');
+      navigate('/admin/login');
     }
+  }, [searchTerm, navigate, onSearchChange]);
+
+  const goToCategory = (id: string | null) => {
+    onSelectCategory?.(id);
+    setMobileOpen(false);
+    setCatsOpen(false);
+    setTimeout(() => {
+      const el = document.getElementById('products-grid');
+      if (el) window.scrollTo({ top: el.offsetTop - 80, behavior: 'smooth' });
+    }, 50);
   };
-  return <header className="shadow-sm border-b-2 sticky top-0 z-50" style={{ backgroundColor: 'var(--theme-header-bg)', borderBottomColor: 'var(--theme-primary)' }}>
-      <div className="container mx-auto px-4 py-4">
-        {/* Logo centrado con efecto de desvanecimiento */}
-        {!hideLogo && (
-          <div 
-            className="flex justify-center mb-4 overflow-hidden"
-            style={{
-              transition: 'opacity 0.8s ease-in-out, max-height 0.8s ease-in-out, margin-bottom 0.8s ease-in-out',
-              opacity: showLogo ? 1 : 0,
-              maxHeight: showLogo ? '5rem' : '0px',
-              marginBottom: showLogo ? '1rem' : '0px',
-            }}
+
+  return (
+    <header
+      className="sticky top-0 z-50 border-b backdrop-blur-md bg-white/95"
+      style={{ borderBottomColor: 'hsl(var(--border))' }}
+    >
+      <div className="container mx-auto px-4 py-3">
+        <div className="flex items-center justify-between gap-3">
+          {/* Mobile menu button */}
+          <button
+            className="md:hidden p-2 rounded-lg hover:bg-muted"
+            onClick={() => setMobileOpen(!mobileOpen)}
+            aria-label="Menú"
           >
-            <Link to="/" className="flex items-center space-x-3">
-              {storeConfig?.logo_url ? <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-auto object-contain" /> : <h1 className="text-2xl font-bold text-center" style={{ color: 'var(--theme-header-text)' }}>
-                  {storeConfig?.store_name || 'Krincesa Distribuidora'}
-                </h1>}
-            </Link>
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+
+          {/* Logo */}
+          <Link to="/" className="flex items-center gap-2 shrink-0">
+            {storeConfig?.logo_url ? (
+              <img src={storeConfig.logo_url} alt={storeConfig.store_name} className="h-12 w-12 sm:h-14 sm:w-14 object-cover rounded-full" />
+            ) : (
+              <div className="h-12 w-12 rounded-full flex items-center justify-center font-bold text-white" style={{ backgroundColor: 'var(--theme-primary)' }}>
+                {storeConfig?.store_name?.charAt(0) || 'K'}
+              </div>
+            )}
+            <span className="hidden sm:inline font-bold text-lg" style={{ color: 'var(--theme-primary)' }}>
+              {storeConfig?.store_name}
+            </span>
+          </Link>
+
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-6 flex-1 justify-center">
+            <div className="relative">
+              <button
+                onClick={() => setCatsOpen(!catsOpen)}
+                onBlur={() => setTimeout(() => setCatsOpen(false), 150)}
+                className="flex items-center gap-1 font-medium hover:text-primary transition-colors"
+              >
+                Categorías <ChevronDown className="h-4 w-4" />
+              </button>
+              {catsOpen && (
+                <div className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-lg border py-2 min-w-[200px] z-50">
+                  {categories?.map((c) => (
+                    <button
+                      key={c.id}
+                      onMouseDown={() => goToCategory(c.id)}
+                      className="block w-full text-left px-4 py-2 hover:bg-muted text-sm"
+                    >
+                      {c.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+            <button onClick={() => goToCategory(null)} className="font-medium hover:text-primary transition-colors">
+              Todos los productos
+            </button>
+            <Link to="/" className="font-medium hover:text-primary transition-colors">Tienda</Link>
+            <a
+              href={storeConfig?.whatsapp_number ? `https://wa.me/${storeConfig.whatsapp_number.replace(/[^\d+]/g, '')}` : '#'}
+              target="_blank"
+              rel="noreferrer"
+              className="font-medium hover:text-primary transition-colors"
+            >
+              Contáctanos
+            </a>
+          </nav>
+
+          {/* Search desktop */}
+          {onSearchChange && (
+            <div className="hidden md:block relative w-72">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="¿Qué estás buscando?"
+                value={searchTerm}
+                onChange={(e) => onSearchChange(e.target.value)}
+                className="pl-9 rounded-full bg-muted/50 border-none"
+              />
+            </div>
+          )}
+
+          {/* Cart */}
+          <Link to="/cart" className="relative p-2 rounded-lg hover:bg-muted">
+            <ShoppingCart className="h-6 w-6" />
+            {itemCount > 0 && (
+              <Badge
+                className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full text-xs"
+                style={{ backgroundColor: 'var(--theme-primary)' }}
+              >
+                {itemCount}
+              </Badge>
+            )}
+          </Link>
+        </div>
+
+        {/* Search mobile */}
+        {onSearchChange && (
+          <div className="md:hidden mt-3 relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="¿Qué estás buscando?"
+              value={searchTerm}
+              onChange={(e) => onSearchChange(e.target.value)}
+              className="pl-9 rounded-full bg-muted/50 border-none"
+            />
           </div>
         )}
 
-        {/* Buscador y carrito */}
-        <div className="flex items-center justify-between gap-4">
-          {/* Buscador visible */}
-          {onSearchChange && <div className="flex-1 max-w-md mx-auto">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input type="text" placeholder="Buscar productos..." value={searchTerm} onChange={e => handleSearchChange(e.target.value)} className="pl-10 w-full" />
-              </div>
-            </div>}
-
-          {/* Carrito */}
-          <Link to="/cart">
-            
-          </Link>
-        </div>
+        {/* Mobile menu drawer */}
+        {mobileOpen && (
+          <div className="md:hidden mt-3 border-t pt-3 space-y-2">
+            <button onClick={() => goToCategory(null)} className="block w-full text-left px-3 py-2 rounded-lg hover:bg-muted font-medium">
+              Todos los productos
+            </button>
+            <div>
+              <p className="px-3 py-2 text-xs uppercase text-muted-foreground font-semibold">Categorías</p>
+              {categories?.map((c) => (
+                <button
+                  key={c.id}
+                  onClick={() => goToCategory(c.id)}
+                  className="block w-full text-left px-3 py-2 rounded-lg hover:bg-muted text-sm"
+                >
+                  {c.name}
+                </button>
+              ))}
+            </div>
+            {storeConfig?.whatsapp_number && (
+              <a
+                href={`https://wa.me/${storeConfig.whatsapp_number.replace(/[^\d+]/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className="block px-3 py-2 rounded-lg hover:bg-muted font-medium"
+              >
+                Contáctanos
+              </a>
+            )}
+          </div>
+        )}
       </div>
-    </header>;
+    </header>
+  );
 };
+
 export default Header;
