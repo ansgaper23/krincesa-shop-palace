@@ -114,7 +114,7 @@ const Admin = () => {
           <div className="block md:hidden">
             <Card className="border-0 shadow-sm">
               <CardContent className="p-2">
-                <TabsList className="grid w-full grid-cols-3 gap-1 bg-transparent p-0 h-auto">
+                <TabsList className="grid w-full grid-cols-4 gap-1 bg-transparent p-0 h-auto">
                   {tabs.map((tab) => {
                     const Icon = tab.icon;
                     return (
@@ -135,7 +135,7 @@ const Admin = () => {
 
           {/* Desktop tabs */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-6 bg-card border shadow-sm">
+            <TabsList className="grid w-full grid-cols-7 bg-card border shadow-sm">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
