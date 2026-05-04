@@ -20,8 +20,8 @@ const Footer = () => {
   };
 
   return (
-    <footer className="border-t" style={{ backgroundColor: 'var(--theme-footer-bg)', borderTopColor: 'var(--theme-primary)' }}>
-      <div className="container mx-auto px-4 py-8">
+    <footer style={{ backgroundColor: 'var(--theme-footer-bg, #fce7f0)' }}>
+      <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* Store Information */}
           <div>
