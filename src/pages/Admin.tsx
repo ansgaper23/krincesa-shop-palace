@@ -11,7 +11,8 @@ import OrdersManager from '@/components/admin/OrdersManager';
 import CouponsManager from '@/components/admin/CouponsManager';
 import StoreConfigManager from '@/components/admin/StoreConfigManager';
 import { SalesStats } from '@/components/admin/SalesStats';
-import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft } from 'lucide-react';
+import HomeContentManager from '@/components/admin/HomeContentManager';
+import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft, Image } from 'lucide-react';
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
@@ -70,6 +71,13 @@ const Admin = () => {
       icon: Percent,
       component: CouponsManager,
       description: 'Crea y gestiona cupones de descuento'
+    },
+    {
+      id: 'home',
+      label: 'Inicio',
+      icon: Image,
+      component: HomeContentManager,
+      description: 'Edita slides, categorías destacadas, banners y beneficios'
     },
     {
       id: 'config',
