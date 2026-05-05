@@ -33,11 +33,11 @@ export const HeroSlider = () => {
 
   return (
     <section className="container mx-auto px-2 sm:px-4 pt-4">
-      <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-[16/9] sm:aspect-[21/9] bg-muted">
+      <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden aspect-[4/3] sm:aspect-[16/9] lg:aspect-[21/9] bg-muted">
         <img
           src={current.image_url}
           alt={current.title || 'Banner'}
-          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-700"
+          className="absolute inset-0 w-full h-full object-contain sm:object-cover transition-opacity duration-700"
           key={current.id}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
