@@ -22,13 +22,26 @@ const Index = () => {
   const { data: products, isLoading } = useProducts();
   const { data: storeConfig } = useStoreConfig();
 
+  const normalize = (s: string) =>
+    s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const tokens = normalize(searchTerm).split(/\s+/).filter(Boolean);
+
   const filteredProducts =
-    products?.filter((product) => {
+    products?.filter((product: any) => {
       const matchesCategory = !selectedCategory || product.category_id === selectedCategory;
-      const matchesSearch =
-        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (product.description && product.description.toLowerCase().includes(searchTerm.toLowerCase()));
-      return matchesCategory && matchesSearch && product.is_active;
+      if (!product.is_active) return false;
+      if (tokens.length === 0) return matchesCategory;
+      const haystack = normalize(
+        [
+          product.name,
+          product.description || '',
+          product.brand || '',
+          product.slug || '',
+          product.categories?.name || '',
+        ].join(' ')
+      );
+      const matchesSearch = tokens.every((t) => haystack.includes(t));
+      return matchesCategory && matchesSearch;
     }) || [];
 
   const displayedProducts = !selectedCategory ? filteredProducts.slice(0, visibleCount) : filteredProducts;
