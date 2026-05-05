@@ -12,7 +12,16 @@ import CouponsManager from '@/components/admin/CouponsManager';
 import StoreConfigManager from '@/components/admin/StoreConfigManager';
 import { SalesStats } from '@/components/admin/SalesStats';
 import HomeContentManager from '@/components/admin/HomeContentManager';
-import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft, Image } from 'lucide-react';
+import R2ConfigManager from '@/components/admin/R2ConfigManager';
+import ProductsExport from '@/components/admin/ProductsExport';
+import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft, Image, Cloud } from 'lucide-react';
+
+const ConfigSection = () => (
+  <div className="space-y-6">
+    <ProductsExport />
+    <StoreConfigManager />
+  </div>
+);
 
 const Admin = () => {
   const [activeTab, setActiveTab] = useState('products');
@@ -80,11 +89,18 @@ const Admin = () => {
       description: 'Edita slides, categorías destacadas, banners y beneficios'
     },
     {
+      id: 'r2',
+      label: 'R2 Storage',
+      icon: Cloud,
+      component: R2ConfigManager,
+      description: 'Configura Cloudflare R2 para subir imágenes'
+    },
+    {
       id: 'config',
       label: 'Configuración',
       icon: Settings,
-      component: StoreConfigManager,
-      description: 'Configura tu tienda'
+      component: ConfigSection,
+      description: 'Configura tu tienda y exporta productos'
     }
   ];
 
