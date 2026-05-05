@@ -370,6 +370,42 @@ export type Database = {
         }
         Relationships: []
       }
+      r2_config: {
+        Row: {
+          access_key_id: string | null
+          account_id: string | null
+          bucket_name: string | null
+          created_at: string
+          enabled: boolean
+          id: string
+          public_url_base: string | null
+          secret_access_key: string | null
+          updated_at: string
+        }
+        Insert: {
+          access_key_id?: string | null
+          account_id?: string | null
+          bucket_name?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          public_url_base?: string | null
+          secret_access_key?: string | null
+          updated_at?: string
+        }
+        Update: {
+          access_key_id?: string | null
+          account_id?: string | null
+          bucket_name?: string | null
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          public_url_base?: string | null
+          secret_access_key?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       store_config: {
         Row: {
           button_text_color: string | null
