@@ -151,7 +151,7 @@ const Admin = () => {
 
           {/* Desktop tabs */}
           <div className="hidden md:block">
-            <TabsList className="grid w-full grid-cols-7 bg-card border shadow-sm">
+            <TabsList className="grid w-full grid-cols-8 bg-card border shadow-sm">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 return (
