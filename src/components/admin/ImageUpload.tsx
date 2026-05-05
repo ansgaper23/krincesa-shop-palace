@@ -84,31 +84,42 @@ export const ImageUpload = ({ value, onChange, label }: ImageUploadProps) => {
       const compressedBlob = await compressAndConvertToWebP(file);
       const compressionPercentage = ((file.size - compressedBlob.size) / file.size * 100).toFixed(1);
 
-      // Generar nombre único para el archivo
-      const fileExt = 'webp';
-      const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      // Check if R2 is enabled
+      const { data: r2cfg } = await supabase
+        .from('r2_config')
+        .select('enabled')
+        .eq('enabled', true)
+        .limit(1)
+        .maybeSingle();
 
-      // Subir a Supabase Storage
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('product-images')
-        .upload(filePath, compressedBlob, {
-          contentType: 'image/webp',
-          cacheControl: '3600',
-          upsert: false
-        });
+      let publicUrl: string;
 
-      if (uploadError) {
-        throw uploadError;
+      if (r2cfg?.enabled) {
+        // Upload via R2 edge function
+        const fileToSend = new File([compressedBlob], `image-${Date.now()}.webp`, { type: 'image/webp' });
+        const fd = new FormData();
+        fd.append('file', fileToSend);
+        const { data, error } = await supabase.functions.invoke('upload-to-r2', { body: fd });
+        if (error) throw error;
+        if (!data?.url) throw new Error('R2 no devolvió URL');
+        publicUrl = data.url;
+      } else {
+        // Fallback: Supabase Storage
+        const fileName = `${Math.random().toString(36).substring(2)}-${Date.now()}.webp`;
+        const { error: uploadError } = await supabase.storage
+          .from('product-images')
+          .upload(fileName, compressedBlob, {
+            contentType: 'image/webp',
+            cacheControl: '3600',
+            upsert: false,
+          });
+        if (uploadError) throw uploadError;
+        const { data: { publicUrl: url } } = supabase.storage.from('product-images').getPublicUrl(fileName);
+        publicUrl = url;
       }
 
-      // Obtener URL pública
-      const { data: { publicUrl } } = supabase.storage
-        .from('product-images')
-        .getPublicUrl(filePath);
-
       onChange(publicUrl);
-      
+
       toast({
         title: "✅ Imagen subida",
         description: `Imagen optimizada ${compressionPercentage}% en formato WebP.`,
