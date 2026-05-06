@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom';
-import { ShoppingCart, Search, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Menu, X, ChevronDown } from 'lucide-react';
+import { CartIcon } from '@/components/CartIcon';
 import { useCart } from '@/hooks/useCart';
 import { useStoreConfig, useCategories } from '@/hooks/useProducts';
 import { Button } from '@/components/ui/button';
@@ -124,7 +125,7 @@ const Header = ({ searchTerm = '', onSearchChange, onSelectCategory }: HeaderPro
 
           {/* Cart */}
           <Link to="/cart" className="relative p-2 rounded-lg hover:bg-muted">
-            <ShoppingCart className="h-6 w-6" />
+            <CartIcon className="h-6 w-6" />
             {itemCount > 0 && (
               <Badge
                 className="absolute -top-1 -right-1 h-5 min-w-5 px-1 rounded-full text-xs"
