@@ -83,82 +83,86 @@ const Index = () => {
         onSelectCategory={setSelectedCategory}
       />
 
-      {showHero && (
-        <>
-          <HeroSlider />
-          <FeaturedCategories onSelectCategory={setSelectedCategory} />
-          <PromoBanner />
-        </>
-      )}
-
-      {/* Category pills (sticky after hero) */}
-      <div className="bg-background border-b py-3 sticky top-[72px] md:top-[76px] z-30">
-        <div className="container mx-auto px-4">
-          <div className="overflow-x-auto scrollbar-hide">
-            <div className="flex gap-2 pb-1 min-w-min">
-              <Button
-                size="sm"
-                variant={!selectedCategory ? 'default' : 'outline'}
-                onClick={() => setSelectedCategory(null)}
-                className="rounded-full shrink-0 text-sm"
-                style={!selectedCategory ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-button-text)' } : undefined}
-              >
-                Todos
-              </Button>
-              {categories?.map((category) => (
-                <Button
-                  key={category.id}
-                  size="sm"
-                  variant={selectedCategory === category.id ? 'default' : 'outline'}
-                  onClick={() => setSelectedCategory(category.id)}
-                  className="rounded-full shrink-0 text-sm"
-                  style={selectedCategory === category.id ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-button-text)' } : undefined}
-                >
-                  {category.name}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Products */}
-      <main id="products-grid" className="flex-1 container mx-auto px-4 py-6">
-        <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: 'var(--theme-product-title)' }}>
-          {selectedCategory ? categories?.find((c) => c.id === selectedCategory)?.name : 'Productos'}
-        </h2>
-
-        {isLoading ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-            {Array.from({ length: 20 }).map((_, i) => (
-              <ProductCardSkeleton key={i} />
-            ))}
-          </div>
-        ) : displayedProducts.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-muted-foreground text-lg">No se encontraron productos</p>
-          </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
-              {displayedProducts.map((product, index) => (
-                <div
-                  key={product.id}
-                  className="animate-fade-in"
-                  style={{ animationDelay: `${Math.min(index * 50, 500)}ms`, animationFillMode: 'both' }}
-                >
-                  <ProductCard product={product} onQuickView={setQuickViewProduct} />
+      {(() => {
+        const order: string[] = (storeConfig as any)?.section_order || ['hero', 'categories', 'banner', 'products', 'benefits'];
+        const renderSection = (key: string) => {
+          if (key === 'hero' && showHero) return <HeroSlider key="hero" />;
+          if (key === 'categories' && showHero) return <FeaturedCategories key="categories" onSelectCategory={setSelectedCategory} />;
+          if (key === 'banner' && showHero) return <PromoBanner key="banner" />;
+          if (key === 'benefits' && showHero) return <BenefitsSection key="benefits" />;
+          if (key === 'products') {
+            return (
+              <div key="products">
+                {/* Category pills */}
+                <div className="bg-background border-b py-3 sticky top-[72px] md:top-[76px] z-30">
+                  <div className="container mx-auto px-4">
+                    <div className="overflow-x-auto scrollbar-hide">
+                      <div className="flex gap-2 pb-1 min-w-min">
+                        <Button
+                          size="sm"
+                          variant={!selectedCategory ? 'default' : 'outline'}
+                          onClick={() => setSelectedCategory(null)}
+                          className="rounded-full shrink-0 text-sm"
+                          style={!selectedCategory ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-button-text)' } : undefined}
+                        >
+                          Todos
+                        </Button>
+                        {categories?.map((category) => (
+                          <Button
+                            key={category.id}
+                            size="sm"
+                            variant={selectedCategory === category.id ? 'default' : 'outline'}
+                            onClick={() => setSelectedCategory(category.id)}
+                            className="rounded-full shrink-0 text-sm"
+                            style={selectedCategory === category.id ? { backgroundColor: 'var(--theme-primary)', color: 'var(--theme-button-text)' } : undefined}
+                          >
+                            {category.name}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              ))}
-            </div>
-            {!selectedCategory && displayedProducts.length < filteredProducts.length && (
-              <div ref={loaderRef} className="h-10" />
-            )}
-          </>
-        )}
-      </main>
 
-      {showHero && <BenefitsSection />}
+                <main id="products-grid" className="flex-1 container mx-auto px-4 py-6">
+                  <h2 className="text-2xl sm:text-3xl font-bold mb-6 text-center" style={{ color: 'var(--theme-product-title)' }}>
+                    {selectedCategory ? categories?.find((c) => c.id === selectedCategory)?.name : 'Productos'}
+                  </h2>
+
+                  {isLoading ? (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                      {Array.from({ length: 20 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+                    </div>
+                  ) : displayedProducts.length === 0 ? (
+                    <div className="text-center py-12">
+                      <p className="text-muted-foreground text-lg">No se encontraron productos</p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+                        {displayedProducts.map((product, index) => (
+                          <div
+                            key={product.id}
+                            className="animate-fade-in"
+                            style={{ animationDelay: `${Math.min(index * 50, 500)}ms`, animationFillMode: 'both' }}
+                          >
+                            <ProductCard product={product} onQuickView={setQuickViewProduct} />
+                          </div>
+                        ))}
+                      </div>
+                      {!selectedCategory && displayedProducts.length < filteredProducts.length && (
+                        <div ref={loaderRef} className="h-10" />
+                      )}
+                    </>
+                  )}
+                </main>
+              </div>
+            );
+          }
+          return null;
+        };
+        return order.map(renderSection);
+      })()}
 
       {/* WhatsApp floating */}
       <Button
