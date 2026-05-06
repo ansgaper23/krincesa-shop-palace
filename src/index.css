@@ -91,6 +91,13 @@
 
   body {
     @apply bg-background text-foreground;
+    font-family: var(--theme-font, 'Rubik', system-ui, sans-serif);
+  }
+
+  /* Apply themed button radius to primary themed buttons */
+  button[style*="--theme-primary"],
+  [data-themed-btn="true"] {
+    border-radius: var(--theme-btn-radius, 9999px) !important;
   }
 }
 
