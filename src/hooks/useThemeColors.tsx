@@ -59,9 +59,12 @@ const applyTheme = (cfg: any) => {
   root.style.setProperty('--theme-btn-radius', BUTTON_RADIUS[shape] || BUTTON_RADIUS.semi);
 };
 
+import { useQueryClient } from '@tanstack/react-query';
+
 export const useThemeColors = () => {
   const { data: storeConfig } = useStoreConfig();
   const [previewOverride, setPreviewOverride] = useState<any>(null);
+  const qc = useQueryClient();
 
   useEffect(() => {
     applyTheme(previewOverride || storeConfig);
@@ -71,12 +74,15 @@ export const useThemeColors = () => {
   useEffect(() => {
     const handler = (e: MessageEvent) => {
       if (e.data?.type === 'design-preview') {
-        setPreviewOverride(e.data.payload);
+        const merged = { ...(storeConfig || {}), ...e.data.payload };
+        setPreviewOverride(merged);
+        // Push into react-query cache so all components (CartIcon, Index sections, etc.) see the override
+        qc.setQueryData(['store-config'], merged);
       }
     };
     window.addEventListener('message', handler);
     return () => window.removeEventListener('message', handler);
-  }, []);
+  }, [storeConfig, qc]);
 
   return previewOverride || storeConfig;
 };
