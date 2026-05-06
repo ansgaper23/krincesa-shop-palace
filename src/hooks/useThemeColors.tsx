@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useStoreConfig } from './useProducts';
 
 const FONT_LINKS: Record<string, string> = {
@@ -37,31 +37,46 @@ const ensureFontLoaded = (font: string) => {
   document.head.appendChild(link);
 };
 
+const applyTheme = (cfg: any) => {
+  if (!cfg) return;
+  const root = document.documentElement;
+  if (cfg.primary_color) root.style.setProperty('--theme-primary', cfg.primary_color);
+  if (cfg.header_bg_color) root.style.setProperty('--theme-header-bg', cfg.header_bg_color);
+  if (cfg.header_text_color) root.style.setProperty('--theme-header-text', cfg.header_text_color);
+  if (cfg.footer_bg_color) root.style.setProperty('--theme-footer-bg', cfg.footer_bg_color);
+  if (cfg.footer_text_color) root.style.setProperty('--theme-footer-text', cfg.footer_text_color);
+  if (cfg.product_title_color) root.style.setProperty('--theme-product-title', cfg.product_title_color);
+  if (cfg.product_price_color) root.style.setProperty('--theme-product-price', cfg.product_price_color);
+  if (cfg.button_text_color) root.style.setProperty('--theme-button-text', cfg.button_text_color);
+
+  const font = cfg.font_family || 'Rubik';
+  ensureFontLoaded(font);
+  const family = FONT_FAMILY[font] || FONT_FAMILY.Rubik;
+  root.style.setProperty('--theme-font', family);
+  document.body.style.fontFamily = family;
+
+  const shape = cfg.button_shape || 'semi';
+  root.style.setProperty('--theme-btn-radius', BUTTON_RADIUS[shape] || BUTTON_RADIUS.semi);
+};
+
 export const useThemeColors = () => {
   const { data: storeConfig } = useStoreConfig();
+  const [previewOverride, setPreviewOverride] = useState<any>(null);
 
   useEffect(() => {
-    if (!storeConfig) return;
-    const root = document.documentElement;
-    const cfg: any = storeConfig;
+    applyTheme(previewOverride || storeConfig);
+  }, [storeConfig, previewOverride]);
 
-    root.style.setProperty('--theme-primary', cfg.primary_color || '#e91e8c');
-    root.style.setProperty('--theme-header-bg', cfg.header_bg_color || '#ffffff');
-    root.style.setProperty('--theme-header-text', cfg.header_text_color || '#000000');
-    root.style.setProperty('--theme-footer-bg', cfg.footer_bg_color || '#f8f9fa');
-    root.style.setProperty('--theme-footer-text', cfg.footer_text_color || '#6c757d');
-    root.style.setProperty('--theme-product-title', cfg.product_title_color || '#1a1a1a');
-    root.style.setProperty('--theme-product-price', cfg.product_price_color || '#e91e8c');
-    root.style.setProperty('--theme-button-text', cfg.button_text_color || '#ffffff');
+  // Listen for live preview messages from the design editor
+  useEffect(() => {
+    const handler = (e: MessageEvent) => {
+      if (e.data?.type === 'design-preview') {
+        setPreviewOverride(e.data.payload);
+      }
+    };
+    window.addEventListener('message', handler);
+    return () => window.removeEventListener('message', handler);
+  }, []);
 
-    const font = cfg.font_family || 'Rubik';
-    ensureFontLoaded(font);
-    root.style.setProperty('--theme-font', FONT_FAMILY[font] || FONT_FAMILY.Rubik);
-    document.body.style.fontFamily = FONT_FAMILY[font] || FONT_FAMILY.Rubik;
-
-    const shape = cfg.button_shape || 'semi';
-    root.style.setProperty('--theme-btn-radius', BUTTON_RADIUS[shape] || BUTTON_RADIUS.semi);
-  }, [storeConfig]);
-
-  return storeConfig;
+  return previewOverride || storeConfig;
 };
