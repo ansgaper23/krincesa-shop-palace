@@ -14,7 +14,7 @@ import { SalesStats } from '@/components/admin/SalesStats';
 import HomeContentManager from '@/components/admin/HomeContentManager';
 import R2ConfigManager from '@/components/admin/R2ConfigManager';
 import ProductsExport from '@/components/admin/ProductsExport';
-import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft, Image, Cloud } from 'lucide-react';
+import { Package, Tag, ShoppingCart, Percent, Settings, BarChart3, ArrowLeft, Image, Cloud, Palette } from 'lucide-react';
 
 const ConfigSection = () => (
   <div className="space-y-6">
@@ -123,6 +123,20 @@ const Admin = () => {
           <p className="text-sm text-muted-foreground hidden sm:block">
             Gestiona tu tienda desde este panel de control
           </p>
+
+          {/* Visual Designer CTA */}
+          <Link to="/admin/design" className="block mt-3">
+            <div className="rounded-2xl p-4 sm:p-5 text-white flex items-center gap-4 shadow-lg hover:shadow-xl transition-all" style={{ background: 'linear-gradient(135deg, var(--theme-primary, #e91e8c), #6c5ce7)' }}>
+              <div className="bg-white/20 rounded-xl p-3">
+                <Palette className="h-6 w-6" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-base sm:text-lg">Diseña tu página web</h3>
+                <p className="text-xs sm:text-sm opacity-90">Editor visual con vista previa en vivo. Cambia colores, tipografía, secciones y más.</p>
+              </div>
+              <ArrowLeft className="h-5 w-5 rotate-180 shrink-0" />
+            </div>
+          </Link>
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-3 sm:space-y-6">
